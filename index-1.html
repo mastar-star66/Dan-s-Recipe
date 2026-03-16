@@ -1,0 +1,2438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#c8903e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="D's Kitchen">
+<meta name="description" content="Personal recipe design studio with AI assistance and food science">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<title>D's Kitchen Lab</title>
+<style>
+:root {
+  --bg:        #0d0906;
+  --surface:   #161008;
+  --card:      #1e150d;
+  --elevated:  #281c12;
+  --border:    #3a2518;
+  --border2:   #4d3220;
+  --gold:      #c8903e;
+  --amber:     #e2a84e;
+  --cream:     #f0d8b0;
+  --text:      #ecdcc0;
+  --text2:     #9a7d58;
+  --muted:     #5a4030;
+  --red:       #8b2635;
+  --green:     #3d6b4f;
+  --teal:      #2a5c5a;
+  --sidebar-w: 220px;
+  --bottom-h:  64px;
+  --radius:    10px;
+  --transition:0.22s ease;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'DM Sans',sans-serif;
+  font-size:15px;
+  line-height:1.6;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:var(--surface);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+::selection{background:var(--gold);color:#000;}
+
+/* ── INSTALL BANNER ─────────────────── */
+.install-banner{
+  position:fixed;top:0;left:0;right:0;z-index:9999;
+  background:linear-gradient(135deg,#1e150d,#2e1e10);
+  border-bottom:1px solid var(--gold);
+  padding:10px 16px;
+  display:flex;align-items:center;gap:12px;
+  box-shadow:0 2px 24px rgba(0,0,0,0.7);
+  animation:slideDown .4s ease;
+}
+@keyframes slideDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}
+.ib-icon{font-size:26px;flex-shrink:0;}
+.ib-text{flex:1;}
+.ib-text strong{display:block;font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--amber);}
+.ib-text span{font-size:12px;color:var(--text2);}
+.ib-install{
+  background:var(--gold);color:#0d0906;
+  border:none;padding:8px 16px;border-radius:6px;
+  font-family:'DM Sans',sans-serif;font-weight:600;font-size:13px;
+  cursor:pointer;white-space:nowrap;flex-shrink:0;
+  transition:background var(--transition);
+}
+.ib-install:hover{background:var(--amber);}
+.ib-close{
+  background:none;border:none;color:var(--text2);
+  font-size:20px;cursor:pointer;padding:4px 8px;flex-shrink:0;
+  transition:color var(--transition);
+}
+.ib-close:hover{color:var(--text);}
+
+/* ── LAYOUT ─────────────────────────── */
+#app{
+  display:flex;
+  min-height:100vh;
+  padding-top:52px; /* banner space, hidden when banner dismissed */
+}
+#app.no-banner{padding-top:0;}
+
+.sidebar{
+  width:var(--sidebar-w);
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  position:fixed;top:52px;bottom:0;left:0;
+  z-index:100;overflow-y:auto;
+  transition:top var(--transition);
+}
+#app.no-banner .sidebar{top:0;}
+
+.sidebar-logo{
+  display:flex;align-items:center;gap:10px;
+  padding:20px 16px 16px;
+  border-bottom:1px solid var(--border);
+}
+.sidebar-logo img{width:36px;height:36px;border-radius:8px;}
+.sidebar-logo-text{
+  font-family:'Cormorant Garamond',serif;
+  font-size:17px;font-weight:700;
+  color:var(--amber);line-height:1.1;
+}
+.sidebar-logo-text small{display:block;font-size:10px;color:var(--text2);font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:.5px;}
+
+.nav-items{padding:12px 8px;flex:1;}
+.nav-item{
+  display:flex;align-items:center;gap:11px;
+  width:100%;padding:10px 12px;
+  background:none;border:none;
+  color:var(--text2);font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:500;
+  border-radius:var(--radius);cursor:pointer;text-align:left;
+  transition:all var(--transition);margin-bottom:2px;
+}
+.nav-item .ni-icon{font-size:17px;width:22px;text-align:center;flex-shrink:0;}
+.nav-item:hover{background:var(--card);color:var(--text);}
+.nav-item.active{background:linear-gradient(135deg,var(--card),var(--elevated));color:var(--amber);border:1px solid var(--border);}
+.nav-item.active .ni-icon{filter:drop-shadow(0 0 4px var(--gold));}
+
+.sidebar-footer{
+  padding:12px 16px;border-top:1px solid var(--border);
+  font-size:11px;color:var(--muted);text-align:center;
+}
+
+.main-content{
+  margin-left:var(--sidebar-w);
+  flex:1;min-height:100vh;
+  background:var(--bg);
+}
+
+.tab-section{display:none;padding:28px 32px;min-height:calc(100vh - 52px);}
+.tab-section.active{display:block;}
+
+/* ── BOTTOM NAV (mobile) ─────────────── */
+.bottom-nav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:var(--surface);
+  border-top:1px solid var(--border);
+  height:var(--bottom-h);
+  padding:0 4px;
+  justify-content:space-around;align-items:center;
+  overflow-x:auto;
+}
+.bn-item{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  flex:1;min-width:52px;padding:8px 4px;
+  background:none;border:none;cursor:pointer;
+  font-size:9.5px;color:var(--text2);
+  transition:color var(--transition);
+}
+.bn-item .bi-icon{font-size:20px;}
+.bn-item.active{color:var(--amber);}
+
+/* ── TYPOGRAPHY ─────────────────────── */
+h1{font-family:'Cormorant Garamond',serif;font-size:2.4rem;font-weight:700;color:var(--cream);line-height:1.1;}
+h2{font-family:'Cormorant Garamond',serif;font-size:1.7rem;font-weight:600;color:var(--cream);margin-bottom:16px;}
+h3{font-family:'Cormorant Garamond',serif;font-size:1.25rem;font-weight:600;color:var(--text);}
+h4{font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:1px;}
+.page-header{margin-bottom:28px;}
+.page-header p{color:var(--text2);margin-top:6px;font-size:14px;}
+.section-title{
+  font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;color:var(--cream);
+  margin:28px 0 16px;padding-bottom:8px;
+  border-bottom:1px solid var(--border);
+}
+.gold-bar{width:40px;height:3px;background:var(--gold);border-radius:2px;margin:6px 0 12px;}
+
+/* ── CARDS ───────────────────────────── */
+.card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px;
+  transition:border-color var(--transition);
+}
+.card:hover{border-color:var(--border2);}
+.card-sm{padding:14px 16px;}
+.card-grid{display:grid;gap:16px;}
+.grid-2{grid-template-columns:repeat(2,1fr);}
+.grid-3{grid-template-columns:repeat(3,1fr);}
+.grid-auto{grid-template-columns:repeat(auto-fill,minmax(260px,1fr));}
+
+/* ── RECIPE CARDS ────────────────────── */
+.recipe-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  overflow:hidden;cursor:pointer;transition:all var(--transition);
+  display:flex;flex-direction:column;
+}
+.recipe-card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.5);}
+.rc-photo{
+  width:100%;height:160px;object-fit:cover;
+  background:linear-gradient(135deg,var(--elevated),var(--card));
+  display:flex;align-items:center;justify-content:center;
+  font-size:40px;color:var(--muted);
+}
+.rc-photo img{width:100%;height:100%;object-fit:cover;}
+.rc-body{padding:16px;flex:1;display:flex;flex-direction:column;}
+.rc-name{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:600;color:var(--cream);margin-bottom:4px;}
+.rc-meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:auto;padding-top:10px;}
+.rc-tag{
+  font-size:11px;padding:3px 8px;border-radius:20px;
+  background:var(--elevated);color:var(--text2);
+}
+.rc-rating{display:flex;gap:2px;}
+.star{color:var(--muted);font-size:14px;cursor:pointer;transition:color var(--transition);}
+.star.lit{color:var(--gold);}
+.rc-actions{display:flex;gap:8px;margin-top:12px;}
+
+/* ── BUTTONS ─────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:9px 18px;border-radius:8px;border:none;
+  font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:500;
+  cursor:pointer;transition:all var(--transition);white-space:nowrap;
+}
+.btn-primary{background:var(--gold);color:#0d0906;}
+.btn-primary:hover{background:var(--amber);transform:translateY(-1px);}
+.btn-secondary{background:var(--elevated);color:var(--text);border:1px solid var(--border);}
+.btn-secondary:hover{border-color:var(--border2);background:var(--card);}
+.btn-ghost{background:none;color:var(--text2);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);border-color:var(--border2);}
+.btn-danger{background:rgba(139,38,53,.2);color:#e87a8a;border:1px solid rgba(139,38,53,.3);}
+.btn-danger:hover{background:rgba(139,38,53,.35);}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.btn-icon{padding:8px;border-radius:8px;}
+
+/* ── FORMS ───────────────────────────── */
+.form-group{margin-bottom:18px;}
+.form-label{display:block;font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px;}
+.form-control{
+  width:100%;padding:10px 14px;
+  background:var(--elevated);border:1px solid var(--border);border-radius:8px;
+  color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;
+  transition:border-color var(--transition),box-shadow var(--transition);
+  outline:none;
+}
+.form-control:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,144,62,.15);}
+.form-control::placeholder{color:var(--muted);}
+textarea.form-control{resize:vertical;min-height:80px;}
+select.form-control{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239a7d58' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-row-3{grid-template-columns:1fr 1fr 1fr;}
+
+/* ── CHIPS / TAGS ────────────────────── */
+.chip-input-wrap{display:flex;flex-wrap:wrap;gap:7px;align-items:center;padding:8px 10px;background:var(--elevated);border:1px solid var(--border);border-radius:8px;min-height:42px;cursor:text;}
+.chip-input-wrap:focus-within{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,144,62,.15);}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;background:var(--border2);color:var(--text);border-radius:20px;font-size:12px;}
+.chip-remove{background:none;border:none;color:var(--text2);cursor:pointer;font-size:14px;line-height:1;padding:0 2px;}
+.chip-remove:hover{color:var(--red);}
+.chip-text-input{background:none;border:none;color:var(--text);outline:none;font-family:'DM Sans',sans-serif;font-size:13px;min-width:80px;flex:1;}
+
+/* ── INGREDIENTS LIST ────────────────── */
+.ingredient-row{display:grid;grid-template-columns:70px 90px 1fr 1fr auto;gap:8px;align-items:center;margin-bottom:8px;}
+.step-row{display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:start;margin-bottom:10px;}
+.step-num{
+  width:28px;height:28px;background:var(--elevated);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:600;color:var(--gold);flex-shrink:0;margin-top:8px;
+}
+
+/* ── STAR RATING ─────────────────────── */
+.rating-widget{display:flex;gap:4px;}
+.rw-star{font-size:24px;cursor:pointer;color:var(--muted);transition:all var(--transition);}
+.rw-star:hover,.rw-star.active{color:var(--gold);transform:scale(1.15);}
+
+/* ── TASTE WHEEL ─────────────────────── */
+.taste-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}
+.taste-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;
+  transition:all var(--transition);cursor:pointer;
+}
+.taste-card:hover{border-color:var(--gold);background:var(--elevated);}
+.taste-card.active{border-color:var(--gold);background:linear-gradient(135deg,var(--elevated),var(--card));}
+.taste-emoji{font-size:28px;margin-bottom:8px;}
+.taste-name{font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--amber);margin-bottom:4px;}
+.taste-desc{font-size:12px;color:var(--text2);}
+.taste-foods{margin-top:10px;display:flex;flex-wrap:wrap;gap:5px;}
+.taste-food-chip{font-size:11px;padding:2px 8px;background:var(--elevated);border-radius:10px;color:var(--text2);}
+.pairing-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;
+  border-left:3px solid var(--gold);margin-bottom:10px;
+}
+.pairing-items{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-family:'Cormorant Garamond',serif;font-size:1.2rem;}
+.pairing-plus{color:var(--gold);font-size:1.4rem;}
+.pairing-reason{font-size:12.5px;color:var(--text2);}
+
+/* ── DRINK PAIRINGS ──────────────────── */
+.drink-category{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  margin-bottom:12px;overflow:hidden;
+}
+.drink-category-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;cursor:pointer;
+  transition:background var(--transition);
+}
+.drink-category-header:hover{background:var(--elevated);}
+.drink-category-body{padding:0 18px 16px;display:none;}
+.drink-category-body.open{display:block;}
+.drink-row{display:flex;gap:12px;align-items:start;padding:10px 0;border-bottom:1px solid var(--border);}
+.drink-row:last-child{border-bottom:none;}
+.drink-type-icon{font-size:22px;width:36px;text-align:center;flex-shrink:0;}
+.drink-info strong{font-size:13px;color:var(--amber);display:block;margin-bottom:3px;}
+.drink-info span{font-size:12.5px;color:var(--text2);}
+
+/* ── SCIENCE ─────────────────────────── */
+.sci-section{margin-bottom:36px;}
+.sci-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:22px;margin-bottom:14px;
+}
+.nova-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin:16px 0;}
+.nova-card{
+  border-radius:var(--radius);padding:18px;
+  border-left:4px solid;
+}
+.nova-1{background:rgba(61,107,79,.15);border-color:#3d6b4f;}
+.nova-2{background:rgba(42,92,90,.15);border-color:#2a5c5a;}
+.nova-3{background:rgba(200,144,62,.12);border-color:#c8903e;}
+.nova-4{background:rgba(139,38,53,.15);border-color:#8b2635;}
+.nova-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.nova-1 .nova-label{color:#5aad79;}
+.nova-2 .nova-label{color:#4a9c9a;}
+.nova-3 .nova-label{color:#e2a84e;}
+.nova-4 .nova-label{color:#e8627a;}
+.sci-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px;}
+.sci-table th{background:var(--elevated);color:var(--text2);padding:10px 14px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;}
+.sci-table td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top;}
+.sci-table tr:last-child td{border-bottom:none;}
+
+/* ── ORIGINS ─────────────────────────── */
+.origin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+.origin-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px;border-top:3px solid var(--gold);
+  transition:all var(--transition);
+}
+.origin-card:hover{border-color:var(--amber);transform:translateY(-2px);}
+.origin-region{font-family:'Cormorant Garamond',serif;font-size:1.15rem;color:var(--amber);margin-bottom:8px;}
+.origin-crops{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+.origin-crop{font-size:11.5px;padding:3px 9px;background:var(--elevated);border-radius:10px;color:var(--text2);}
+
+/* ── LIBRARY ─────────────────────────── */
+.lib-filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:center;}
+.filter-btn{
+  padding:7px 14px;border-radius:20px;border:1px solid var(--border);
+  background:none;color:var(--text2);font-size:12.5px;cursor:pointer;
+  transition:all var(--transition);
+}
+.filter-btn.active,.filter-btn:hover{background:var(--elevated);color:var(--text);border-color:var(--border2);}
+.search-bar{
+  position:relative;flex:1;min-width:200px;
+}
+.search-bar input{width:100%;padding:8px 36px 8px 14px;}
+.search-bar-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;}
+
+/* ── AI LAB ──────────────────────────── */
+.ai-section{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+.ai-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px;}
+.ai-result-section{display:none;}
+.ai-result-section.visible{display:block;}
+.taste-bar-wrap{margin-bottom:10px;}
+.taste-bar-label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;}
+.taste-bar-label span:first-child{color:var(--text2);}
+.taste-bar-label span:last-child{color:var(--amber);}
+.taste-bar-track{background:var(--elevated);border-radius:4px;height:7px;overflow:hidden;}
+.taste-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--gold),var(--amber));transition:width .8s ease;}
+.ai-recipe-content{
+  background:var(--elevated);border-radius:var(--radius);padding:18px;
+  font-size:13.5px;line-height:1.8;color:var(--text);white-space:pre-wrap;
+  max-height:480px;overflow-y:auto;
+}
+.loading-dots{display:inline-flex;gap:5px;align-items:center;}
+.loading-dots span{width:7px;height:7px;background:var(--gold);border-radius:50%;animation:pulse 1.4s infinite;}
+.loading-dots span:nth-child(2){animation-delay:.2s;}
+.loading-dots span:nth-child(3){animation-delay:.4s;}
+@keyframes pulse{0%,80%,100%{opacity:.3;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+
+/* ── DASHBOARD ────────────────────────── */
+.dash-hero{
+  background:linear-gradient(135deg,var(--elevated) 0%,var(--card) 60%,transparent 100%);
+  border:1px solid var(--border);border-radius:16px;
+  padding:32px;margin-bottom:28px;position:relative;overflow:hidden;
+}
+.dash-hero::before{
+  content:'';position:absolute;top:-40px;right:-40px;
+  width:200px;height:200px;
+  background:radial-gradient(circle,rgba(200,144,62,.12),transparent 70%);
+  border-radius:50%;
+}
+.dash-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;margin-top:22px;}
+.stat-card{
+  background:var(--elevated);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px;text-align:center;
+}
+.stat-num{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;color:var(--amber);}
+.stat-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.7px;}
+.quick-actions{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin:20px 0;}
+.quick-action{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px;cursor:pointer;text-align:center;transition:all var(--transition);
+}
+.quick-action:hover{border-color:var(--gold);background:var(--elevated);transform:translateY(-2px);}
+.qa-icon{font-size:28px;margin-bottom:8px;}
+.qa-label{font-size:13px;font-weight:500;color:var(--text);}
+
+/* ── RECIPE EDITOR PANEL ─────────────── */
+.editor-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;
+  display:none;opacity:0;transition:opacity var(--transition);
+}
+.editor-overlay.open{display:block;opacity:1;}
+.editor-panel{
+  position:fixed;top:0;right:0;bottom:0;
+  width:min(640px,100vw);
+  background:var(--surface);border-left:1px solid var(--border);
+  z-index:201;overflow-y:auto;
+  transform:translateX(100%);transition:transform .3s ease;
+  display:flex;flex-direction:column;
+}
+.editor-panel.open{transform:translateX(0);}
+.editor-header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:20px 24px;border-bottom:1px solid var(--border);
+  position:sticky;top:0;background:var(--surface);z-index:1;
+}
+.editor-body{padding:24px;flex:1;}
+.editor-footer{
+  padding:16px 24px;border-top:1px solid var(--border);
+  display:flex;gap:10px;justify-content:flex-end;
+  position:sticky;bottom:0;background:var(--surface);
+}
+
+/* ── RECIPE VIEWER ─────────────────────── */
+.viewer-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:300;
+  display:none;overflow-y:auto;
+}
+.viewer-overlay.open{display:block;}
+.viewer-panel{
+  max-width:680px;margin:40px auto;
+  background:var(--surface);border-radius:16px;border:1px solid var(--border);
+  overflow:hidden;
+}
+.viewer-photo{
+  width:100%;height:220px;
+  background:linear-gradient(135deg,var(--elevated),var(--card));
+  display:flex;align-items:center;justify-content:center;font-size:60px;
+  position:relative;
+}
+.viewer-photo img{width:100%;height:100%;object-fit:cover;}
+.viewer-close-btn{
+  position:absolute;top:14px;right:14px;
+  background:rgba(0,0,0,.6);border:none;color:#fff;
+  width:34px;height:34px;border-radius:50%;font-size:18px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+.viewer-content{padding:28px;}
+.viewer-meta{display:flex;gap:16px;flex-wrap:wrap;margin:12px 0 20px;font-size:13px;color:var(--text2);}
+.viewer-meta span{display:flex;align-items:center;gap:5px;}
+
+/* ── SETTINGS ────────────────────────── */
+.settings-section{margin-bottom:32px;}
+.api-status{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:12px;padding:4px 10px;border-radius:20px;
+}
+.api-status.ok{background:rgba(61,107,79,.2);color:#5aad79;}
+.api-status.no{background:rgba(139,38,53,.2);color:#e8627a;}
+
+/* ── TOAST ───────────────────────────── */
+.toast-container{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{
+  background:var(--elevated);border:1px solid var(--border);
+  border-radius:var(--radius);padding:12px 18px;
+  font-size:13.5px;color:var(--text);
+  animation:toastIn .3s ease,toastOut .3s ease 2.7s forwards;
+  max-width:320px;display:flex;align-items:center;gap:8px;
+  box-shadow:0 8px 32px rgba(0,0,0,.5);
+}
+.toast.success{border-left:3px solid var(--green);}
+.toast.error{border-left:3px solid var(--red);}
+.toast.info{border-left:3px solid var(--teal);}
+@keyframes toastIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+@keyframes toastOut{to{opacity:0;transform:translateX(30px)}}
+
+/* ── MISCELLANEOUS ────────────────────── */
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;background:var(--elevated);color:var(--text2);}
+.badge-gold{background:rgba(200,144,62,.2);color:var(--amber);}
+.badge-green{background:rgba(61,107,79,.2);color:#5aad79;}
+.divider{border:none;border-top:1px solid var(--border);margin:20px 0;}
+.empty-state{text-align:center;padding:60px 20px;color:var(--text2);}
+.empty-state .es-icon{font-size:48px;margin-bottom:16px;opacity:.5;}
+.flex{display:flex;}
+.flex-between{display:flex;justify-content:space-between;align-items:center;}
+.flex-end{display:flex;justify-content:flex-end;}
+.gap-2{gap:8px;}
+.gap-3{gap:12px;}
+.mt-1{margin-top:4px;}
+.mt-2{margin-top:10px;}
+.mt-3{margin-top:20px;}
+.mb-2{margin-bottom:10px;}
+.text-muted{color:var(--text2);}
+.text-amber{color:var(--amber);}
+.text-sm{font-size:12px;}
+.fw-600{font-weight:600;}
+
+/* ── RESPONSIVE ───────────────────────── */
+@media (max-width:860px){
+  .ai-section{grid-template-columns:1fr;}
+  .form-row{grid-template-columns:1fr;}
+  .form-row-3{grid-template-columns:1fr 1fr;}
+  .ingredient-row{grid-template-columns:60px 80px 1fr auto;}
+  .ingredient-row .ing-prep{display:none;}
+}
+@media (max-width:700px){
+  .sidebar{display:none;}
+  .main-content{margin-left:0;}
+  .bottom-nav{display:flex;}
+  .tab-section{padding:18px 16px 80px;}
+  #app{padding-top:48px;}
+  #app.no-banner{padding-top:0;}
+  .sidebar.no-banner{top:0;}
+  .grid-2,.grid-3{grid-template-columns:1fr;}
+  .dash-stats{grid-template-columns:repeat(2,1fr);}
+  .form-row-3{grid-template-columns:1fr;}
+  .viewer-panel{margin:20px 8px;}
+}
+@media (max-width:480px){
+  .install-banner{flex-wrap:wrap;}
+  .ib-text{order:-1;width:100%;}
+}
+</style>
+<script src="recipes-db.js"></script>
+</head>
+<body>
+
+<!-- ═══ INSTALL BANNER ═══ -->
+<div id="install-banner" class="install-banner">
+  <div class="ib-icon">🍽️</div>
+  <div class="ib-text">
+    <strong>Install D's Kitchen Lab</strong>
+    <span>Add to home screen for offline access &amp; the full app experience</span>
+  </div>
+  <button id="install-btn" class="ib-install">Install App</button>
+  <button id="banner-close" class="ib-close" aria-label="Dismiss">×</button>
+</div>
+
+<!-- ═══ APP SHELL ═══ -->
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <img src="icon.svg" alt="icon" onerror="this.style.display='none'">
+      <div class="sidebar-logo-text">D's Kitchen<small>Lab ✦ Studio</small></div>
+    </div>
+    <div class="nav-items" id="nav-items"></div>
+    <div class="sidebar-footer">v1.0 · Built with 🔥 &amp; Food Science</div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content" id="main-content">
+
+    <!-- TAB 1: DASHBOARD -->
+    <section id="tab-dashboard" class="tab-section active">
+      <div class="dash-hero">
+        <h4>Welcome back, Chef</h4>
+        <h1 id="dash-greeting">D's Kitchen Lab</h1>
+        <div class="gold-bar"></div>
+        <p id="dash-subtitle" class="text-muted">Your personal culinary science studio.</p>
+        <div class="dash-stats" id="dash-stats"></div>
+      </div>
+      <div class="quick-actions" id="quick-actions"></div>
+      <h2 class="section-title">🔬 Food Science Insight</h2>
+      <div class="card" id="dash-fact"></div>
+      <h2 class="section-title">⭐ Recently Saved</h2>
+      <div class="card-grid grid-auto" id="dash-recent"></div>
+    </section>
+
+    <!-- TAB 2: D'S DESIGN -->
+    <section id="tab-design" class="tab-section">
+      <div class="page-header flex-between">
+        <div>
+          <h1>D's Design</h1>
+          <div class="gold-bar"></div>
+          <p>Your personal recipe studio. Create, log, and own your recipes.</p>
+        </div>
+        <button class="btn btn-primary" onclick="openEditor()">+ New Recipe</button>
+      </div>
+      <div class="lib-filters">
+        <div class="search-bar">
+          <input class="form-control" id="design-search" placeholder="Search your recipes…" oninput="renderDesignTab()">
+          <span class="search-bar-icon">🔍</span>
+        </div>
+        <select class="form-control" id="design-cat-filter" onchange="renderDesignTab()" style="width:auto;">
+          <option value="">All Categories</option>
+          <option>Breakfast</option><option>Lunch</option><option>Dinner</option>
+          <option>Snack</option><option>Dessert</option><option>Drink</option>
+          <option>Sauce</option><option>Side</option><option>Other</option>
+        </select>
+        <select class="form-control" id="design-sort" onchange="renderDesignTab()" style="width:auto;">
+          <option value="date">Newest</option>
+          <option value="name">Name</option>
+          <option value="rating">Highest Rated</option>
+        </select>
+      </div>
+      <div class="card-grid grid-auto" id="design-recipes-grid"></div>
+    </section>
+
+    <!-- TAB 3: AI RECIPE LAB -->
+    <section id="tab-ai" class="tab-section">
+      <div class="page-header">
+        <h1>AI Recipe Lab</h1>
+        <div class="gold-bar"></div>
+        <p>Let food science and AI design your next meal. Enter ingredients and preferences, get a crafted recipe with flavor analysis.</p>
+      </div>
+      <div class="ai-section">
+        <!-- Controls Panel -->
+        <div class="ai-panel">
+          <h3 style="margin-bottom:18px;">⚗️ Build Your Recipe</h3>
+          <div class="form-group">
+            <label class="form-label">Ingredients You Have</label>
+            <div class="chip-input-wrap" id="ing-chips">
+              <input class="chip-text-input" id="ing-input" placeholder="Type ingredient + Enter…" onkeydown="handleIngredientKey(event)">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Cuisine Style</label>
+              <select class="form-control" id="cuisine-sel">
+                <option value="Any">Any / Fusion</option>
+                <option>Italian</option><option>Asian</option><option>Mexican</option>
+                <option>Mediterranean</option><option>American</option><option>Indian</option>
+                <option>French</option><option>Japanese</option><option>Middle Eastern</option>
+                <option>Thai</option><option>Greek</option><option>BBQ / Smoked</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Cook Time</label>
+              <select class="form-control" id="time-sel">
+                <option value="Any">Any</option>
+                <option>Under 20 min</option><option>Under 45 min</option>
+                <option>Under 1 hour</option><option>1–2 hours</option><option>All day / slow</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Difficulty</label>
+              <select class="form-control" id="diff-sel">
+                <option value="Any">Any</option>
+                <option>Easy</option><option>Medium</option><option>Hard</option><option>Expert</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Servings</label>
+              <input type="number" class="form-control" id="servings-sel" value="4" min="1" max="20">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Dietary Restrictions</label>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;" id="dietary-checks">
+              <!-- rendered by JS -->
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Flavor Preferences</label>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;" id="flavor-checks">
+              <!-- rendered by JS -->
+            </div>
+          </div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center;padding:13px;" onclick="generateAIRecipe()">
+            ✨ Generate Recipe
+          </button>
+          <div id="ai-status" style="margin-top:10px;text-align:center;font-size:12px;color:var(--text2);"></div>
+        </div>
+
+        <!-- Result Panel -->
+        <div>
+          <div id="ai-loading" style="display:none;" class="ai-panel" style="text-align:center;padding:40px;">
+            <div style="text-align:center;padding:40px;">
+              <div style="font-size:40px;margin-bottom:16px;">👨‍🍳</div>
+              <p>Crafting your recipe…</p>
+              <div class="loading-dots" style="justify-content:center;margin-top:12px;">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+          </div>
+          <div id="ai-result" class="ai-result-section">
+            <div class="ai-panel">
+              <div class="flex-between mb-2">
+                <h3 id="ai-recipe-name">Recipe Name</h3>
+                <span id="ai-recipe-badge" class="badge badge-gold"></span>
+              </div>
+              <pre id="ai-recipe-content" class="ai-recipe-content"></pre>
+              <div style="margin-top:18px;">
+                <h4 style="margin-bottom:12px;">TASTE PROFILE</h4>
+                <div id="taste-profile-bars"></div>
+              </div>
+              <div style="margin-top:16px;">
+                <h4 style="margin-bottom:8px;">SUGGESTED DRINK PAIRING</h4>
+                <p id="ai-drink-pairing" style="font-size:13.5px;color:var(--text2);"></p>
+              </div>
+              <hr class="divider">
+              <div class="flex-between">
+                <div>
+                  <h4 style="margin-bottom:6px;">RATE THIS RECIPE</h4>
+                  <div class="rating-widget" id="ai-rating-widget"></div>
+                </div>
+                <button class="btn btn-primary" onclick="saveAIRecipe()">💾 Save to Library</button>
+              </div>
+            </div>
+          </div>
+          <div id="ai-placeholder" class="ai-panel" style="text-align:center;padding:60px 20px;">
+            <div style="font-size:50px;margin-bottom:16px;opacity:.4;">🧪</div>
+            <p style="color:var(--text2);">Fill in the form and click<br><strong style="color:var(--amber);">Generate Recipe</strong> to begin.</p>
+            <p style="color:var(--muted);font-size:12px;margin-top:8px;">Works with or without an API key.<br>Configure AI in Settings for richer results.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: FLAVOR PROFILES -->
+    <section id="tab-flavors" class="tab-section">
+      <div class="page-header">
+        <h1>Flavor Profiles</h1>
+        <div class="gold-bar"></div>
+        <p>The science of taste. Understand how flavors interact and why certain combinations create extraordinary dishes.</p>
+      </div>
+      <h2 class="section-title">The Eight Tastes</h2>
+      <div class="taste-grid" id="taste-grid"></div>
+      <div id="taste-detail" style="display:none;margin-top:20px;" class="card"></div>
+      <h2 class="section-title" style="margin-top:36px;">Classic Pairings & Why They Work</h2>
+      <div id="pairings-grid"></div>
+      <h2 class="section-title" style="margin-top:36px;">The Science of Pairing</h2>
+      <div class="card-grid grid-2" id="pairing-science"></div>
+    </section>
+
+    <!-- TAB 5: DRINK PAIRINGS -->
+    <section id="tab-drinks" class="tab-section">
+      <div class="page-header">
+        <h1>Drink Pairings</h1>
+        <div class="gold-bar"></div>
+        <p>Elevate every meal. Curated wine, beer, spirit, cocktail, and non-alcoholic pairings for every food style.</p>
+      </div>
+      <div class="lib-filters" style="margin-bottom:20px;">
+        <input class="form-control" id="drink-search" placeholder="Filter by food style…" oninput="filterDrinks()" style="max-width:300px;">
+      </div>
+      <div id="drink-categories"></div>
+    </section>
+
+    <!-- TAB 6: FOOD SCIENCE -->
+    <section id="tab-science" class="tab-section">
+      <div class="page-header">
+        <h1>Food Science</h1>
+        <div class="gold-bar"></div>
+        <p>From the gut-brain axis to the Maillard reaction — the science behind what we eat and why it matters.</p>
+      </div>
+
+      <div class="sci-section">
+        <h2>🧠 The Gut-Brain Axis</h2>
+        <div class="sci-card">
+          <p>Modern nutrition research reveals a profound bidirectional communication network between the gut microbiome and the brain. The trillions of microorganisms in our digestive tract act as mediators between what we eat and how our brain functions.</p>
+          <p style="margin-top:10px;">Dietary patterns high in vegetables, fruits, legumes, whole grains, and lean proteins are associated with <strong style="color:var(--amber);">reduced risk of cognitive decline, mild cognitive impairment, and Alzheimer's disease</strong> — driven by anti-inflammatory flavonoids and fiber fermentation metabolites.</p>
+          <p style="margin-top:10px;font-size:13px;color:var(--text2);">Key insight: Bioavailability of these protective compounds is highly dependent on <em>food combinations</em> — the food matrix architecture determines how nutrients reach systemic circulation.</p>
+        </div>
+      </div>
+
+      <div class="sci-section">
+        <h2>📊 The NOVA Framework</h2>
+        <p style="margin-bottom:16px;color:var(--text2);">The most widely used food classification system in nutritional epidemiology, based on the degree of industrial processing.</p>
+        <div class="nova-grid">
+          <div class="nova-card nova-1">
+            <div class="nova-label">Group 1 — Unprocessed</div>
+            <strong>Whole plants, fresh meats, eggs, milk</strong>
+            <p style="font-size:12px;margin-top:6px;color:var(--text2);">Minimal changes for preservation. Highest satiety. Reduced risk of chronic disease.</p>
+          </div>
+          <div class="nova-card nova-2">
+            <div class="nova-label">Group 2 — Culinary Ingredients</div>
+            <strong>Butter, olive oil, salt, sugar, flour</strong>
+            <p style="font-size:12px;margin-top:6px;color:var(--text2);">Extracted from Group 1. Used in home cooking. Calorie-dense but essential.</p>
+          </div>
+          <div class="nova-card nova-3">
+            <div class="nova-label">Group 3 — Processed Foods</div>
+            <strong>Canned beans, artisanal bread, simple cheeses</strong>
+            <p style="font-size:12px;margin-top:6px;color:var(--text2);">2-3 ingredients. Recognizable versions of original food. Generally healthy.</p>
+          </div>
+          <div class="nova-card nova-4">
+            <div class="nova-label">Group 4 — Ultra-Processed</div>
+            <strong>Industrial formulas with 5+ ingredients</strong>
+            <p style="font-size:12px;margin-top:6px;color:var(--text2);">Emulsifiers, HFCS, flavor enhancers. Linked to obesity, T2D, CVD. Disrupts food matrix.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="sci-section">
+        <h2>🔥 Culinary Chemistry</h2>
+        <div class="card-grid grid-2">
+          <div class="sci-card">
+            <h3 style="margin-bottom:10px;">The Maillard Reaction</h3>
+            <p style="font-size:13.5px;">A non-enzymatic browning reaction between amino acids and reducing sugars, beginning at ~140°C (284°F). Produces hundreds of flavor compounds and brown pigments (melanoidins). Responsible for the taste of roasted meats, baked bread, coffee, and seared steak.</p>
+            <p style="font-size:12px;color:var(--text2);margin-top:8px;">Key: Needs both protein + sugar. Dry surface browns better (pat meat dry before searing).</p>
+          </div>
+          <div class="sci-card">
+            <h3 style="margin-bottom:10px;">Caramelization</h3>
+            <p style="font-size:13.5px;">Thermal decomposition of sugars in the absence of amino acids. Produces sweet, nutty, and bitter compounds with golden-brown color. Different starting sugars produce distinct flavors — sucrose vs. fructose vs. lactose each caramelize differently.</p>
+            <p style="font-size:12px;color:var(--text2);margin-top:8px;">Key: Pure sugar transformation. Low moisture required. Temperature varies by sugar type.</p>
+          </div>
+          <div class="sci-card">
+            <h3 style="margin-bottom:10px;">Chocolate Tempering</h3>
+            <p style="font-size:13.5px;">Cocoa butter crystallizes in six polymorphic forms (I–VI). Only <strong>Form V</strong> (melting point 33.8°C) delivers the glossy finish, sharp snap, and mouth-melting properties of fine chocolate. Incorrect tempering leads to "bloom" — the gritty white Form VI surface.</p>
+            <p style="font-size:12px;color:var(--text2);margin-top:8px;">Tempering: melt → cool to 27°C → rewarm to 31–32°C to seed only Form V crystals.</p>
+          </div>
+          <div class="sci-card">
+            <h3 style="margin-bottom:10px;">Fermentation Science</h3>
+            <p style="font-size:13.5px;">Soy sauce and miso rely on <em>Aspergillus oryzae</em> (koji) secreting proteases and amylases. Proteases hydrolyze proteins into glutamic acid → MSG in presence of salt. This creates umami. Lactic acid bacteria and yeasts develop complex secondary flavors over months.</p>
+            <p style="font-size:12px;color:var(--text2);margin-top:8px;">Time = flavor depth. Longer fermentation = more complex umami compounds.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="sci-section">
+        <h2>🌿 Life-Stage Nutrition</h2>
+        <table class="sci-table">
+          <thead><tr><th>Nutrient</th><th>Effect of Replacing Grains with Starchy Veg</th><th>Why It Matters</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Choline</strong></td><td style="color:#5aad79;">↑ Increases</td><td>Brain development, liver function</td></tr>
+            <tr><td><strong>Sodium</strong></td><td style="color:#5aad79;">↓ Decreases</td><td>Hypertension management across lifespan</td></tr>
+            <tr><td><strong>Iron</strong></td><td style="color:#e8627a;">↓ Significant decrease</td><td>Grains are primary iron fortification vehicles</td></tr>
+            <tr><td><strong>Folate</strong></td><td style="color:#e8627a;">↓ Significant decrease</td><td>Neural tube development, cellular repair</td></tr>
+            <tr><td><strong>Magnesium</strong></td><td style="color:#e8627a;">↓ Decreases</td><td>Required for 300+ enzymatic reactions</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="sci-section">
+        <h2>🏺 Traditional Food Science</h2>
+        <div class="card-grid grid-2">
+          <div class="sci-card">
+            <h3 style="margin-bottom:8px;">Indigenous Australian Bush Tucker</h3>
+            <p style="font-size:13px;">Aboriginal Australians have practiced food science for 60,000+ years — the world's oldest continuous culinary tradition. Stone-ground Acacia seed flour dates to 65,000 years ago, making Indigenous Australians the world's first bakers.</p>
+            <p style="font-size:12px;color:var(--text2);margin-top:8px;">Toxic seeds like Moreton Bay chestnut are detoxified via days of leaching in running water before baking — sophisticated safety science without modern labs.</p>
+          </div>
+          <div class="sci-card">
+            <h3 style="margin-bottom:8px;">Arctic Inuit Preservation</h3>
+            <p style="font-size:13px;"><strong style="color:var(--amber);">Igunaq</strong>: Walrus buried in permafrost to ferment over summer. <strong style="color:var(--amber);">Kiviaq</strong>: Hundreds of auk birds packed in seal skin and buried for months.</p>
+            <p style="font-size:12px;color:var(--text2);margin-top:8px;">Vitamin C obtained from raw reindeer liver and seal brain — destroyed by heat. Natural refrigeration at -18°C halts glycogen depletion, providing more dietary glycogen than Western-slaughtered equivalents.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 7: ORIGINS -->
+    <section id="tab-origins" class="tab-section">
+      <div class="page-header">
+        <h1>Food Origins</h1>
+        <div class="gold-bar"></div>
+        <p>The world's food supply is built on ancient exchanges. 69% of the agricultural habits of 177 countries rely on crops that originated thousands of miles away.</p>
+      </div>
+      <div class="card" style="margin-bottom:24px;padding:18px;">
+        <p style="font-size:13.5px;">Nikolai Vavilov's <strong style="color:var(--amber);">Centers of Origin</strong> (1920s) identified regions of greatest crop diversity as the birthplaces of domestication — now critical genetic reservoirs for climate resilience. Just <strong style="color:var(--amber);">5.5% of the world's counties</strong> produce half the global food supply.</p>
+      </div>
+      <div class="origin-grid" id="origin-grid"></div>
+      <h2 class="section-title" style="margin-top:36px;">Key Trade Route Chokepoints</h2>
+      <div class="card-grid grid-3" id="chokepoints-grid"></div>
+    </section>
+
+    <!-- TAB 8: LIBRARY -->
+    <section id="tab-library" class="tab-section">
+      <div class="page-header">
+        <h1>My Library</h1>
+        <div class="gold-bar"></div>
+        <p>All your saved recipes in one place — personal creations and AI-generated favorites.</p>
+      </div>
+      <div class="lib-filters">
+        <div class="search-bar" style="flex:1;min-width:180px;">
+          <input class="form-control" id="lib-search" placeholder="Search library…" oninput="renderLibrary()">
+          <span class="search-bar-icon">🔍</span>
+        </div>
+        <button class="filter-btn active" data-lib="all" onclick="setLibFilter(this,'all')">All</button>
+        <button class="filter-btn" data-lib="mine" onclick="setLibFilter(this,'mine')">My Recipes</button>
+        <button class="filter-btn" data-lib="ai" onclick="setLibFilter(this,'ai')">AI Recipes</button>
+        <select class="form-control" id="lib-sort" onchange="renderLibrary()" style="width:auto;">
+          <option value="date">Newest</option>
+          <option value="rating">Highest Rated</option>
+          <option value="name">Name A–Z</option>
+        </select>
+      </div>
+      <div class="card-grid grid-auto" id="library-grid"></div>
+    </section>
+
+    <!-- TAB: PRE-MADE RECIPES -->
+    <section id="tab-recipes" class="tab-section">
+      <div class="page-header">
+        <h1>Recipe Book</h1>
+        <div class="gold-bar"></div>
+        <p>1,300+ authentic recipes spanning every major world cuisine — healthy to indulgent, fast food to holiday feasts. Includes 5 signature cheese stick recipes.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr auto auto auto;gap:10px;align-items:center;margin-bottom:20px;">
+        <div class="search-bar">
+          <input class="form-control" id="rb-search" placeholder="Search recipes, ingredients, cuisine…" oninput="renderRecipeBook()">
+          <span class="search-bar-icon">🔍</span>
+        </div>
+        <select class="form-control" id="rb-cuisine" onchange="renderRecipeBook()" style="width:auto;min-width:140px;"><option value="">All Cuisines</option></select>
+        <select class="form-control" id="rb-type" onchange="renderRecipeBook()" style="width:auto;min-width:130px;"><option value="">All Types</option></select>
+        <select class="form-control" id="rb-diff" onchange="renderRecipeBook()" style="width:auto;min-width:120px;">
+          <option value="">Any Difficulty</option><option>Easy</option><option>Medium</option><option>Hard</option><option>Expert</option>
+        </select>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+        <p id="rb-count" style="color:var(--text2);font-size:13px;"></p>
+        <select class="form-control" id="rb-sort" onchange="renderRecipeBook()" style="width:auto;">
+          <option value="name">Name A–Z</option>
+          <option value="time">Quickest First</option>
+          <option value="diff">Easiest First</option>
+        </select>
+      </div>
+      <div class="card-grid grid-auto" id="rb-grid"></div>
+      <div id="rb-pagination" style="display:flex;gap:8px;justify-content:center;margin-top:24px;flex-wrap:wrap;"></div>
+    </section>
+
+    <!-- RECIPE BOOK DETAIL VIEWER -->
+    <div class="viewer-overlay" id="rb-overlay" onclick="if(event.target===this)closeRBDetail()">
+      <div class="viewer-panel" style="max-width:700px;">
+        <div class="viewer-photo" id="rb-detail-photo" style="font-size:50px;">
+          🍽️<button class="viewer-close-btn" onclick="closeRBDetail()">×</button>
+        </div>
+        <div class="viewer-content">
+          <div class="flex-between" style="gap:12px;flex-wrap:wrap;margin-bottom:8px;">
+            <h2 id="rb-detail-name"></h2>
+            <button class="btn btn-primary btn-sm" id="rb-detail-save">💾 Save to Library</button>
+          </div>
+          <div class="viewer-meta" id="rb-detail-meta"></div>
+          <h4 style="margin-bottom:10px;">INGREDIENTS</h4>
+          <ul id="rb-detail-ings" style="padding-left:20px;color:var(--text2);font-size:14px;line-height:2.1;"></ul>
+          <h4 style="margin:18px 0 10px;">HOW TO MAKE IT</h4>
+          <p id="rb-detail-how" style="font-size:14px;line-height:1.9;color:var(--text);"></p>
+          <div style="margin-top:20px;text-align:right;">
+            <button class="btn btn-secondary btn-sm" onclick="closeRBDetail()">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 9: SETTINGS -->
+    <section id="tab-settings" class="tab-section">
+      <div class="page-header">
+        <h1>Settings</h1>
+        <div class="gold-bar"></div>
+      </div>
+
+      <div class="settings-section">
+        <h2>🤖 AI Configuration</h2>
+        <div class="card" style="margin-top:12px;">
+          <div class="flex-between mb-2">
+            <h3>Anthropic API Key</h3>
+            <span id="api-status-badge" class="api-status no">⬤ Not Configured</span>
+          </div>
+          <p style="font-size:13px;color:var(--text2);margin-bottom:14px;">Enter your Anthropic API key to enable AI-powered recipe generation. Your key is stored locally in your browser only — never sent to any server except Anthropic.</p>
+          <div class="form-group">
+            <label class="form-label">API Key</label>
+            <input type="password" class="form-control" id="api-key-input" placeholder="sk-ant-…" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Custom API Proxy URL <span style="font-weight:400;color:var(--muted);">(optional, for CORS on GitHub Pages)</span></label>
+            <input type="text" class="form-control" id="proxy-url-input" placeholder="https://your-proxy.workers.dev/v1/messages">
+          </div>
+          <button class="btn btn-primary" onclick="saveApiSettings()">Save API Settings</button>
+          <div class="card" style="margin-top:16px;background:var(--elevated);padding:14px;">
+            <h4 style="margin-bottom:8px;">📋 Setup Notes for GitHub Pages</h4>
+            <p style="font-size:12px;color:var(--text2);line-height:1.7;">
+              Direct browser-to-Anthropic API calls may be blocked by CORS when hosted on GitHub Pages. The AI Lab will use the built-in recipe generator by default (no API needed).<br><br>
+              <strong style="color:var(--amber);">For full AI: </strong>Deploy a simple Cloudflare Worker as a proxy, set it to forward requests to api.anthropic.com with your API key, then paste the Worker URL above.<br><br>
+              <strong style="color:var(--amber);">For local use: </strong>Run a local HTTP server (e.g. <code style="background:var(--bg);padding:2px 5px;border-radius:3px;">npx serve .</code>) — API calls work without a proxy on localhost.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h2>💾 Data Management</h2>
+        <div class="card" style="margin-top:12px;">
+          <div class="card-grid grid-3" style="gap:12px;">
+            <div class="card card-sm" style="text-align:center;">
+              <div style="font-size:24px;margin-bottom:8px;">📤</div>
+              <strong style="display:block;margin-bottom:6px;">Export Data</strong>
+              <p style="font-size:12px;color:var(--text2);margin-bottom:10px;">Download all your recipes as JSON backup</p>
+              <button class="btn btn-secondary btn-sm" onclick="exportData()">Export JSON</button>
+            </div>
+            <div class="card card-sm" style="text-align:center;">
+              <div style="font-size:24px;margin-bottom:8px;">📥</div>
+              <strong style="display:block;margin-bottom:6px;">Import Data</strong>
+              <p style="font-size:12px;color:var(--text2);margin-bottom:10px;">Restore from a previous JSON export</p>
+              <label class="btn btn-secondary btn-sm" style="cursor:pointer;">
+                Import JSON<input type="file" accept=".json" style="display:none;" onchange="importData(this)">
+              </label>
+            </div>
+            <div class="card card-sm" style="text-align:center;">
+              <div style="font-size:24px;margin-bottom:8px;">🗑️</div>
+              <strong style="display:block;margin-bottom:6px;">Clear All Data</strong>
+              <p style="font-size:12px;color:var(--text2);margin-bottom:10px;">Permanently delete all saved recipes</p>
+              <button class="btn btn-danger btn-sm" onclick="clearAllData()">Clear Data</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h2>ℹ️ About</h2>
+        <div class="card" style="margin-top:12px;padding:20px;">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+            <img src="icon.svg" alt="" style="width:48px;height:48px;border-radius:10px;">
+            <div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--amber);">D's Kitchen Lab</div>
+              <div style="font-size:12px;color:var(--text2);">Version 1.0 · A personal culinary science studio</div>
+            </div>
+          </div>
+          <p style="font-size:13px;color:var(--text2);">Built on food science research, flavor pairing theory, and AI-assisted recipe generation. Fully offline-capable as a Progressive Web App. All data stored locally on your device.</p>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- /main-content -->
+
+  <!-- MOBILE BOTTOM NAV -->
+  <nav class="bottom-nav" id="bottom-nav"></nav>
+
+</div><!-- /app -->
+
+<!-- ═══ RECIPE EDITOR PANEL ═══ -->
+<div class="editor-overlay" id="editor-overlay" onclick="closeEditorIfOverlay(event)"></div>
+<div class="editor-panel" id="editor-panel">
+  <div class="editor-header">
+    <h3 id="editor-title">New Recipe</h3>
+    <button class="btn btn-ghost btn-sm" onclick="closeEditor()">✕ Close</button>
+  </div>
+  <div class="editor-body">
+    <input type="hidden" id="edit-id">
+    <div class="form-group">
+      <label class="form-label">Recipe Name *</label>
+      <input type="text" class="form-control" id="edit-name" placeholder="Give your recipe a great name…" style="font-size:16px;">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description / Tagline</label>
+      <textarea class="form-control" id="edit-desc" rows="2" placeholder="A brief description…"></textarea>
+    </div>
+    <div class="form-row form-row-3">
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <select class="form-control" id="edit-cat">
+          <option>Breakfast</option><option>Lunch</option><option selected>Dinner</option>
+          <option>Snack</option><option>Dessert</option><option>Drink</option>
+          <option>Sauce</option><option>Side</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Servings</label>
+        <input type="number" class="form-control" id="edit-servings" value="4" min="1" max="100">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Difficulty</label>
+        <select class="form-control" id="edit-diff">
+          <option>Easy</option><option selected>Medium</option><option>Hard</option><option>Expert</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Prep Time (min)</label>
+        <input type="number" class="form-control" id="edit-prep" value="20" min="0">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cook Time (min)</label>
+        <input type="number" class="form-control" id="edit-cook" value="30" min="0">
+      </div>
+    </div>
+
+    <!-- Ingredients -->
+    <div class="form-group">
+      <div class="flex-between mb-2">
+        <label class="form-label" style="margin:0;">Ingredients</label>
+        <button class="btn btn-ghost btn-sm" onclick="addIngredient()">+ Add</button>
+      </div>
+      <div style="display:grid;grid-template-columns:70px 90px 1fr 120px 30px;gap:6px;margin-bottom:5px;">
+        <span style="font-size:10px;color:var(--muted);text-transform:uppercase;">Qty</span>
+        <span style="font-size:10px;color:var(--muted);text-transform:uppercase;">Unit</span>
+        <span style="font-size:10px;color:var(--muted);text-transform:uppercase;">Ingredient</span>
+        <span style="font-size:10px;color:var(--muted);text-transform:uppercase;">Prep Note</span>
+        <span></span>
+      </div>
+      <div id="ingredients-list"></div>
+    </div>
+
+    <!-- Steps -->
+    <div class="form-group">
+      <div class="flex-between mb-2">
+        <label class="form-label" style="margin:0;">Steps</label>
+        <button class="btn btn-ghost btn-sm" onclick="addStep()">+ Add Step</button>
+      </div>
+      <div id="steps-list"></div>
+    </div>
+
+    <!-- Tags -->
+    <div class="form-group">
+      <label class="form-label">Tags</label>
+      <div class="chip-input-wrap" id="edit-tags-wrap">
+        <input class="chip-text-input" id="edit-tags-input" placeholder="Add tag + Enter…" onkeydown="handleTagKey(event)">
+      </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="form-group">
+      <label class="form-label">Chef Notes / Tips</label>
+      <textarea class="form-control" id="edit-notes" rows="3" placeholder="Tricks, substitutions, storage tips…"></textarea>
+    </div>
+
+    <!-- Photo -->
+    <div class="form-group">
+      <label class="form-label">Photo</label>
+      <div style="display:flex;gap:12px;align-items:center;">
+        <div id="photo-preview" style="width:80px;height:80px;background:var(--elevated);border-radius:8px;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:24px;">📷</div>
+        <label class="btn btn-ghost btn-sm" style="cursor:pointer;">
+          Choose Photo
+          <input type="file" accept="image/*" id="photo-input" style="display:none;" onchange="handlePhotoUpload(this)">
+        </label>
+        <button class="btn btn-ghost btn-sm" onclick="clearPhoto()">Remove</button>
+      </div>
+    </div>
+
+    <!-- Rating -->
+    <div class="form-group">
+      <label class="form-label">Your Rating</label>
+      <div class="rating-widget" id="edit-rating-widget"></div>
+    </div>
+  </div>
+  <div class="editor-footer">
+    <button id="delete-btn" class="btn btn-danger" style="display:none;" onclick="deleteCurrentRecipe()">🗑 Delete</button>
+    <button class="btn btn-secondary" onclick="closeEditor()">Cancel</button>
+    <button class="btn btn-primary" onclick="saveRecipe()">💾 Save Recipe</button>
+  </div>
+</div>
+
+<!-- RECIPE VIEWER -->
+<div class="viewer-overlay" id="viewer-overlay" onclick="closeViewerIfOverlay(event)">
+  <div class="viewer-panel" id="viewer-panel">
+    <div class="viewer-photo" id="viewer-photo">🍽️
+      <button class="viewer-close-btn" onclick="closeViewer()">×</button>
+    </div>
+    <div class="viewer-content">
+      <h2 id="viewer-name"></h2>
+      <p id="viewer-desc" style="color:var(--text2);font-style:italic;"></p>
+      <div class="viewer-meta" id="viewer-meta"></div>
+      <h4 style="margin-bottom:10px;">INGREDIENTS</h4>
+      <ul id="viewer-ingredients" style="padding-left:18px;color:var(--text2);font-size:14px;line-height:2;"></ul>
+      <h4 style="margin:18px 0 10px;">INSTRUCTIONS</h4>
+      <ol id="viewer-steps" style="padding-left:18px;color:var(--text);font-size:14px;line-height:1.8;"></ol>
+      <div id="viewer-notes-wrap" style="display:none;margin-top:16px;" class="card card-sm">
+        <h4 style="margin-bottom:6px;">CHEF NOTES</h4>
+        <p id="viewer-notes" style="font-size:13.5px;color:var(--text2);"></p>
+      </div>
+      <div style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;">
+        <button class="btn btn-secondary btn-sm" onclick="closeViewer()">Close</button>
+        <button class="btn btn-ghost btn-sm" id="viewer-edit-btn">✎ Edit</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  STATE & PERSISTENCE
+// ═══════════════════════════════════════════════
+const STATE_KEY = 'dkl_state';
+
+let state = {
+  recipes: [],      // D's Design recipes
+  aiRecipes: [],    // Saved AI recipes
+  settings: { apiKey:'', proxyUrl:'' },
+  currentTab: 'dashboard',
+  libFilter: 'all',
+  currentIngredients: [],  // AI lab chips
+  editRating: 0,
+  aiRating: 0,
+  currentEditPhoto: null,
+  currentEditTags: [],
+  pendingAIRecipe: null
+};
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STATE_KEY);
+    if (raw) { const s = JSON.parse(raw); Object.assign(state, s); }
+  } catch(e) { console.warn('State load error', e); }
+}
+
+function saveState() {
+  try { localStorage.setItem(STATE_KEY, JSON.stringify(state)); } catch(e) {}
+}
+
+function uuid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+
+// ═══════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════
+const NAV_ITEMS = [
+  { id:'dashboard', icon:'🏠', label:'Dashboard' },
+  { id:'design',    icon:'✏️', label:"D's Design" },
+  { id:'ai',        icon:'🤖', label:'AI Lab' },
+  { id:'recipes',   icon:'🍽️', label:'Recipe Book' },
+  { id:'flavors',   icon:'🎨', label:'Flavors' },
+  { id:'drinks',    icon:'🍷', label:'Drinks' },
+  { id:'science',   icon:'🔬', label:'Food Science' },
+  { id:'origins',   icon:'🌍', label:'Origins' },
+  { id:'library',   icon:'📚', label:'Library' },
+  { id:'settings',  icon:'⚙️', label:'Settings' },
+];
+
+function buildNav() {
+  const si = document.getElementById('nav-items');
+  const bn = document.getElementById('bottom-nav');
+  si.innerHTML = NAV_ITEMS.map(n => `
+    <button class="nav-item${n.id===state.currentTab?' active':''}" data-tab="${n.id}" onclick="navigate('${n.id}')">
+      <span class="ni-icon">${n.icon}</span>${n.label}
+    </button>`).join('');
+  bn.innerHTML = NAV_ITEMS.map(n => `
+    <button class="bn-item${n.id===state.currentTab?' active':''}" onclick="navigate('${n.id}')">
+      <span class="bi-icon">${n.icon}</span>${n.label}
+    </button>`).join('');
+}
+
+function navigate(tab) {
+  document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  state.currentTab = tab;
+  buildNav();
+  if (tab === 'dashboard') renderDashboard();
+  if (tab === 'design')    renderDesignTab();
+  if (tab === 'library')   renderLibrary();
+  if (tab === 'settings')  renderSettings();
+  window.scrollTo(0, 0);
+}
+
+// ═══════════════════════════════════════════════
+//  INSTALL BANNER
+// ═══════════════════════════════════════════════
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+});
+
+document.getElementById('install-btn').addEventListener('click', async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') toast('App installed! 🎉', 'success');
+    deferredPrompt = null;
+  } else {
+    toast('To install: use your browser\'s "Add to Home Screen" option.', 'info');
+  }
+});
+
+document.getElementById('banner-close').addEventListener('click', () => {
+  const b = document.getElementById('install-banner');
+  b.style.animation = 'toastOut .3s ease forwards';
+  setTimeout(() => {
+    b.style.display = 'none';
+    document.getElementById('app').classList.add('no-banner');
+    document.querySelector('.sidebar').style.top = '0';
+  }, 300);
+});
+
+// ═══════════════════════════════════════════════
+//  TOAST NOTIFICATIONS
+// ═══════════════════════════════════════════════
+function toast(msg, type = 'info') {
+  const icons = { success:'✅', error:'❌', info:'ℹ️', warning:'⚠️' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${icons[type]||''}</span>${msg}`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 3200);
+}
+
+// ═══════════════════════════════════════════════
+//  DASHBOARD
+// ═══════════════════════════════════════════════
+const FACTS = [
+  "The Maillard reaction begins at ~140°C (284°F) and produces hundreds of flavor compounds responsible for the taste of roasted meats, baked bread, and coffee.",
+  "The gut microbiome contains trillions of organisms that mediate between diet and brain health — what you eat directly influences cognitive function and mood.",
+  "Only Form V of cocoa butter crystallization gives chocolate its gloss, snap, and mouth-melting properties. Incorrect tempering creates gritty 'bloom'.",
+  "Umami synergy: combining different sources of glutamates (mushrooms + aged cheese + soy sauce) creates an exponential depth of flavor, not just additive.",
+  "69% of the national dietary and agricultural habits across 177 countries rely on crops that originated in other regions — testament to ancient global exchange.",
+  "Acid (lemon, vinegar) doesn't just add flavor — it chemically denatures proteins, 'cooks' delicate items like ceviche, and cuts through fats to brighten richness.",
+  "Salt suppresses bitterness while enhancing sweetness — it's not just seasoning, it's a flavor amplifier that works across all the other tastes.",
+  "Just 5.5% of the world's counties produce half of the global food supply, creating significant fragility in the food chain at key trade chokepoints."
+];
+
+function renderDashboard() {
+  const n = state.recipes.length;
+  const ai = state.aiRecipes.length;
+  const topRated = [...state.recipes,...state.aiRecipes].filter(r=>r.rating>0).sort((a,b)=>b.rating-a.rating).length;
+  document.getElementById('dash-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-num">${n}</div><div class="stat-label">My Recipes</div></div>
+    <div class="stat-card"><div class="stat-num">${ai}</div><div class="stat-label">AI Recipes</div></div>
+    <div class="stat-card"><div class="stat-num">${topRated}</div><div class="stat-label">Rated</div></div>
+    <div class="stat-card"><div class="stat-num">${n+ai}</div><div class="stat-label">Total Saved</div></div>`;
+  document.getElementById('quick-actions').innerHTML = `
+    <div class="quick-action" onclick="navigate('design');openEditor()"><div class="qa-icon">✏️</div><div class="qa-label">New Recipe</div></div>
+    <div class="quick-action" onclick="navigate('ai')"><div class="qa-icon">🤖</div><div class="qa-label">AI Recipe Lab</div></div>
+    <div class="quick-action" onclick="navigate('flavors')"><div class="qa-icon">🎨</div><div class="qa-label">Flavor Profiles</div></div>
+    <div class="quick-action" onclick="navigate('drinks')"><div class="qa-icon">🍷</div><div class="qa-label">Drink Pairings</div></div>`;
+  const fact = FACTS[Math.floor(Date.now() / 86400000) % FACTS.length];
+  document.getElementById('dash-fact').innerHTML = `<p style="font-size:14.5px;line-height:1.8;">${fact}</p>`;
+  const recent = [...state.recipes,...state.aiRecipes].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,4);
+  const rg = document.getElementById('dash-recent');
+  if (!recent.length) { rg.innerHTML='<p style="color:var(--text2)">No recipes saved yet. Create your first in D\'s Design!</p>'; return; }
+  rg.innerHTML = recent.map(r=>recipeCardHTML(r, r._type==='ai')).join('');
+}
+
+// ═══════════════════════════════════════════════
+//  D'S DESIGN — RECIPE CRUD
+// ═══════════════════════════════════════════════
+function renderDesignTab() {
+  const q = document.getElementById('design-search').value.toLowerCase();
+  const cat = document.getElementById('design-cat-filter').value;
+  const sort = document.getElementById('design-sort').value;
+  let list = [...state.recipes];
+  if (q) list = list.filter(r => r.name.toLowerCase().includes(q) || (r.tags||[]).some(t=>t.toLowerCase().includes(q)));
+  if (cat) list = list.filter(r => r.category === cat);
+  if (sort === 'name') list.sort((a,b)=>a.name.localeCompare(b.name));
+  else if (sort === 'rating') list.sort((a,b)=>(b.rating||0)-(a.rating||0));
+  else list.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  const grid = document.getElementById('design-recipes-grid');
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="es-icon">📖</div><p>No recipes yet.</p><button class="btn btn-primary mt-3" onclick="openEditor()">Create Your First Recipe</button></div>`;
+    return;
+  }
+  grid.innerHTML = list.map(r => recipeCardHTML(r, false)).join('');
+}
+
+function recipeCardHTML(r, isAI) {
+  const stars = [1,2,3,4,5].map(i=>`<span class="star${(r.rating||0)>=i?' lit':''}">★</span>`).join('');
+  const tags = (r.tags||[]).slice(0,3).map(t=>`<span class="rc-tag">${t}</span>`).join('');
+  const photo = r.photo
+    ? `<div class="rc-photo"><img src="${r.photo}" alt="${r.name}" loading="lazy"></div>`
+    : `<div class="rc-photo">${r.category==='Dessert'?'🍰':r.category==='Drink'?'🍹':r.category==='Breakfast'?'🍳':'🍽️'}</div>`;
+  const typeLabel = isAI ? '<span class="badge badge-gold" style="margin-left:6px;">AI</span>' : '';
+  const onclick = isAI ? `viewAIRecipe('${r.id}')` : `viewRecipe('${r.id}')`;
+  return `<div class="recipe-card" onclick="${onclick}">
+    ${photo}
+    <div class="rc-body">
+      <div class="rc-name">${r.name}${typeLabel}</div>
+      <div style="font-size:12px;color:var(--text2);">${r.description?r.description.substring(0,60)+'…':''}</div>
+      <div class="rc-meta">
+        ${r.category?`<span class="rc-tag">${r.category}</span>`:''}
+        ${r.prep_time?`<span style="font-size:11px;color:var(--muted)">⏱ ${(r.prep_time||0)+(r.cook_time||0)} min</span>`:''}
+        ${tags}
+        <div class="rc-rating" style="margin-left:auto;">${stars}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// Editor state
+let editTags = [];
+let editIngredients = [{ qty:'', unit:'', name:'', prep:'' }];
+let editSteps = [''];
+let editRating = 0;
+let editPhoto = null;
+
+function openEditor(id) {
+  const panel = document.getElementById('editor-panel');
+  const overlay = document.getElementById('editor-overlay');
+  document.getElementById('editor-title').textContent = id ? 'Edit Recipe' : 'New Recipe';
+  document.getElementById('delete-btn').style.display = id ? 'block' : 'none';
+
+  if (id) {
+    const r = state.recipes.find(r=>r.id===id);
+    if (!r) return;
+    document.getElementById('edit-id').value = r.id;
+    document.getElementById('edit-name').value = r.name;
+    document.getElementById('edit-desc').value = r.description||'';
+    document.getElementById('edit-cat').value = r.category||'Dinner';
+    document.getElementById('edit-servings').value = r.servings||4;
+    document.getElementById('edit-diff').value = r.difficulty||'Medium';
+    document.getElementById('edit-prep').value = r.prep_time||0;
+    document.getElementById('edit-cook').value = r.cook_time||0;
+    document.getElementById('edit-notes').value = r.notes||'';
+    editIngredients = (r.ingredients||[{qty:'',unit:'',name:'',prep:''}]).map(i=>({...i}));
+    editSteps = [...(r.steps||[''])];
+    editTags = [...(r.tags||[])];
+    editRating = r.rating||0;
+    editPhoto = r.photo||null;
+  } else {
+    document.getElementById('edit-id').value = '';
+    document.getElementById('edit-name').value = '';
+    document.getElementById('edit-desc').value = '';
+    document.getElementById('edit-cat').value = 'Dinner';
+    document.getElementById('edit-servings').value = 4;
+    document.getElementById('edit-diff').value = 'Medium';
+    document.getElementById('edit-prep').value = 20;
+    document.getElementById('edit-cook').value = 30;
+    document.getElementById('edit-notes').value = '';
+    editIngredients = [{ qty:'', unit:'', name:'', prep:'' }];
+    editSteps = [''];
+    editTags = [];
+    editRating = 0;
+    editPhoto = null;
+  }
+  renderIngredientsList();
+  renderStepsList();
+  renderEditTags();
+  renderEditRating();
+  renderPhotoPreview();
+  overlay.classList.add('open');
+  panel.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeEditor() {
+  document.getElementById('editor-panel').classList.remove('open');
+  document.getElementById('editor-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function closeEditorIfOverlay(e) { if (e.target === e.currentTarget) closeEditor(); }
+
+function renderIngredientsList() {
+  document.getElementById('ingredients-list').innerHTML = editIngredients.map((ing,i) => `
+    <div style="display:grid;grid-template-columns:70px 90px 1fr 120px 30px;gap:6px;margin-bottom:6px;">
+      <input class="form-control" value="${ing.qty}" placeholder="2" oninput="editIngredients[${i}].qty=this.value">
+      <input class="form-control" value="${ing.unit}" placeholder="cups" list="unit-list" oninput="editIngredients[${i}].unit=this.value">
+      <input class="form-control" value="${ing.name}" placeholder="flour" oninput="editIngredients[${i}].name=this.value">
+      <input class="form-control ing-prep" value="${ing.prep}" placeholder="sifted" oninput="editIngredients[${i}].prep=this.value">
+      <button class="btn btn-icon btn-ghost" style="color:var(--red)" onclick="removeIngredient(${i})">×</button>
+    </div>`).join('') + `<datalist id="unit-list">
+      <option>cup</option><option>tbsp</option><option>tsp</option><option>oz</option>
+      <option>lb</option><option>g</option><option>kg</option><option>ml</option>
+      <option>liter</option><option>cloves</option><option>pinch</option><option>to taste</option>
+      <option>whole</option><option>slice</option><option>piece</option>
+    </datalist>`;
+}
+
+function addIngredient() {
+  editIngredients.push({ qty:'', unit:'', name:'', prep:'' });
+  renderIngredientsList();
+}
+
+function removeIngredient(i) {
+  if (editIngredients.length > 1) editIngredients.splice(i,1);
+  renderIngredientsList();
+}
+
+function renderStepsList() {
+  document.getElementById('steps-list').innerHTML = editSteps.map((step, i) => `
+    <div class="step-row">
+      <div class="step-num">${i+1}</div>
+      <textarea class="form-control" rows="2" placeholder="Describe step ${i+1}…" oninput="editSteps[${i}]=this.value">${step}</textarea>
+      <button class="btn btn-icon btn-ghost" style="color:var(--red);margin-top:8px;" onclick="removeStep(${i})">×</button>
+    </div>`).join('');
+}
+
+function addStep() { editSteps.push(''); renderStepsList(); }
+function removeStep(i) { if (editSteps.length > 1) editSteps.splice(i,1); renderStepsList(); }
+
+function renderEditTags() {
+  const wrap = document.getElementById('edit-tags-wrap');
+  const existingChips = wrap.querySelectorAll('.chip');
+  existingChips.forEach(c=>c.remove());
+  editTags.forEach((t,i) => {
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.innerHTML = `${t}<button class="chip-remove" onclick="removeEditTag(${i})">×</button>`;
+    wrap.insertBefore(chip, document.getElementById('edit-tags-input'));
+  });
+}
+
+function handleTagKey(e) {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    const val = e.target.value.trim().replace(/,/g,'');
+    if (val && !editTags.includes(val)) { editTags.push(val); renderEditTags(); }
+    e.target.value = '';
+  }
+}
+
+function removeEditTag(i) { editTags.splice(i,1); renderEditTags(); }
+
+function renderEditRating() {
+  document.getElementById('edit-rating-widget').innerHTML =
+    [1,2,3,4,5].map(i=>`<span class="rw-star${editRating>=i?' active':''}" onclick="setEditRating(${i})">★</span>`).join('');
+}
+
+function setEditRating(n) { editRating = n; renderEditRating(); }
+
+function handlePhotoUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { editPhoto = e.target.result; renderPhotoPreview(); };
+  reader.readAsDataURL(file);
+}
+
+function renderPhotoPreview() {
+  const prev = document.getElementById('photo-preview');
+  prev.innerHTML = editPhoto ? `<img src="${editPhoto}" style="width:100%;height:100%;object-fit:cover;">` : '📷';
+}
+
+function clearPhoto() { editPhoto = null; renderPhotoPreview(); document.getElementById('photo-input').value=''; }
+
+function saveRecipe() {
+  const name = document.getElementById('edit-name').value.trim();
+  if (!name) { toast('Recipe name is required', 'error'); return; }
+  const id = document.getElementById('edit-id').value || uuid();
+  const isNew = !document.getElementById('edit-id').value;
+  const recipe = {
+    id, _type: 'mine',
+    name,
+    description: document.getElementById('edit-desc').value.trim(),
+    category: document.getElementById('edit-cat').value,
+    servings: parseInt(document.getElementById('edit-servings').value)||4,
+    difficulty: document.getElementById('edit-diff').value,
+    prep_time: parseInt(document.getElementById('edit-prep').value)||0,
+    cook_time: parseInt(document.getElementById('edit-cook').value)||0,
+    ingredients: editIngredients.filter(i=>i.name.trim()),
+    steps: editSteps.filter(s=>s.trim()),
+    tags: editTags,
+    notes: document.getElementById('edit-notes').value.trim(),
+    photo: editPhoto,
+    rating: editRating,
+    created_at: isNew ? new Date().toISOString() : (state.recipes.find(r=>r.id===id)||{}).created_at || new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+  if (isNew) { state.recipes.unshift(recipe); }
+  else { const idx = state.recipes.findIndex(r=>r.id===id); if(idx>=0) state.recipes[idx]=recipe; }
+  saveState();
+  closeEditor();
+  renderDesignTab();
+  toast(isNew ? 'Recipe created! 🎉' : 'Recipe updated!', 'success');
+}
+
+function deleteCurrentRecipe() {
+  const id = document.getElementById('edit-id').value;
+  if (!id) return;
+  if (!confirm('Delete this recipe? This cannot be undone.')) return;
+  state.recipes = state.recipes.filter(r=>r.id!==id);
+  saveState();
+  closeEditor();
+  renderDesignTab();
+  toast('Recipe deleted', 'info');
+}
+
+function viewRecipe(id) {
+  const r = state.recipes.find(r=>r.id===id);
+  if (!r) return;
+  document.getElementById('viewer-name').textContent = r.name;
+  document.getElementById('viewer-desc').textContent = r.description||'';
+  const vp = document.getElementById('viewer-photo');
+  vp.innerHTML = r.photo
+    ? `<img src="${r.photo}" alt="${r.name}"><button class="viewer-close-btn" onclick="closeViewer()">×</button>`
+    : `${r.category==='Dessert'?'🍰':r.category==='Drink'?'🍹':r.category==='Breakfast'?'🍳':'🍽️'}<button class="viewer-close-btn" onclick="closeViewer()">×</button>`;
+  const total = (r.prep_time||0) + (r.cook_time||0);
+  document.getElementById('viewer-meta').innerHTML = `
+    <span>📂 ${r.category}</span>
+    <span>🍽 ${r.servings} servings</span>
+    ${r.difficulty?`<span>📊 ${r.difficulty}</span>`:''}
+    ${total?`<span>⏱ ${total} min total</span>`:''}
+    <span>${[1,2,3,4,5].map(i=>`<span style="color:${(r.rating||0)>=i?'var(--gold)':'var(--muted)'}">★</span>`).join('')}</span>`;
+  const ingEl = document.getElementById('viewer-ingredients');
+  ingEl.innerHTML = (r.ingredients||[]).map(i=>`<li>${[i.qty,i.unit,i.name,i.prep].filter(Boolean).join(' ')}</li>`).join('');
+  const stepsEl = document.getElementById('viewer-steps');
+  stepsEl.innerHTML = (r.steps||[]).map(s=>`<li style="margin-bottom:8px;">${s}</li>`).join('');
+  const notesWrap = document.getElementById('viewer-notes-wrap');
+  if (r.notes) { notesWrap.style.display='block'; document.getElementById('viewer-notes').textContent=r.notes; }
+  else { notesWrap.style.display='none'; }
+  document.getElementById('viewer-edit-btn').onclick = () => { closeViewer(); openEditor(r.id); };
+  document.getElementById('viewer-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeViewer() {
+  document.getElementById('viewer-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function closeViewerIfOverlay(e) { if (e.target === e.currentTarget) closeViewer(); }
+
+// ═══════════════════════════════════════════════
+//  AI RECIPE LAB
+// ═══════════════════════════════════════════════
+const DIETARY_OPTIONS = ['Vegetarian','Vegan','Gluten-Free','Dairy-Free','Nut-Free','Low-Carb','Keto','Paleo'];
+const FLAVOR_OPTIONS = ['Rich & Savory','Bright & Fresh','Spicy','Sweet','Umami Bomb','Light & Delicate','Smoky','Herby'];
+
+function initAILab() {
+  document.getElementById('dietary-checks').innerHTML = DIETARY_OPTIONS.map(d=>
+    `<label style="display:flex;align-items:center;gap:6px;font-size:12.5px;cursor:pointer;padding:5px 10px;border:1px solid var(--border);border-radius:20px;transition:all .2s;">
+      <input type="checkbox" value="${d}" style="accent-color:var(--gold);"> ${d}
+    </label>`).join('');
+  document.getElementById('flavor-checks').innerHTML = FLAVOR_OPTIONS.map(f=>
+    `<label style="display:flex;align-items:center;gap:6px;font-size:12.5px;cursor:pointer;padding:5px 10px;border:1px solid var(--border);border-radius:20px;transition:all .2s;">
+      <input type="checkbox" value="${f}" style="accent-color:var(--gold);"> ${f}
+    </label>`).join('');
+  initAIRatingWidget();
+}
+
+function handleIngredientKey(e) {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    const val = e.target.value.trim().replace(/,/g,'');
+    if (val && !state.currentIngredients.includes(val)) {
+      state.currentIngredients.push(val);
+      renderIngredientChips();
+    }
+    e.target.value = '';
+  }
+}
+
+function renderIngredientChips() {
+  const wrap = document.getElementById('ing-chips');
+  const existingChips = wrap.querySelectorAll('.chip');
+  existingChips.forEach(c=>c.remove());
+  state.currentIngredients.forEach((ing,i) => {
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.innerHTML = `${ing}<button class="chip-remove" onclick="removeIngChip(${i})">×</button>`;
+    wrap.insertBefore(chip, document.getElementById('ing-input'));
+  });
+}
+
+function removeIngChip(i) {
+  state.currentIngredients.splice(i,1);
+  renderIngredientChips();
+}
+
+function initAIRatingWidget() {
+  state.aiRating = 0;
+  document.getElementById('ai-rating-widget').innerHTML =
+    [1,2,3,4,5].map(i=>`<span class="rw-star" onclick="setAIRating(${i})">★</span>`).join('');
+}
+
+function setAIRating(n) {
+  state.aiRating = n;
+  document.querySelectorAll('#ai-rating-widget .rw-star').forEach((s,i) => {
+    s.classList.toggle('active', i < n);
+  });
+}
+
+// The built-in smart recipe generator
+const RECIPE_DATA = {
+  bases: { Italian:['pasta','risotto','polenta','gnocchi'], Asian:['rice','noodles','fried rice','stir-fry'],
+    Mexican:['tortillas','rice and beans','tacos'], American:['mashed potatoes','fries','coleslaw'],
+    Mediterranean:['couscous','flatbread','roasted veg'], Indian:['basmati rice','naan','dal'],
+    French:['baguette','potato gratin','ratatouille'], Japanese:['steamed rice','soba','udon'],
+    Any:['rice','pasta','bread','potatoes'] },
+  proteins: ['chicken breast','salmon fillet','ground beef','tofu','shrimp','pork tenderloin','chickpeas','eggs','lamb chops'],
+  aromatics: { Italian:'garlic, onion, fennel', Asian:'ginger, garlic, scallions', Mexican:'garlic, onion, jalapeño',
+    Mediterranean:'garlic, onion, shallots', Indian:'ginger, garlic, onion', French:'shallots, garlic',
+    Japanese:'ginger, scallions', Any:'garlic and onion' },
+  herbs: { Italian:'fresh basil and thyme', Asian:'cilantro and mint', Mexican:'cilantro and oregano',
+    Mediterranean:'rosemary, thyme, oregano', Indian:'cilantro and fresh ginger', French:'tarragon and parsley',
+    Japanese:'shiso and nori', Any:'parsley, thyme' },
+  sauces: { Italian:['tomato-based sauce','white wine and butter','aglio e olio'],
+    Asian:['soy-ginger glaze','coconut curry','peanut sauce'], Mexican:['salsa verde','chile sauce','mole'],
+    Mediterranean:['herb oil','romesco','tahini-lemon'], Indian:['tikka masala','korma','vindaloo'],
+    French:['beurre blanc','velouté','pan jus'], Any:['herb butter','vinaigrette','cream sauce'] }
+};
+
+async function generateAIRecipe() {
+  const ings = state.currentIngredients;
+  const cuisine = document.getElementById('cuisine-sel').value;
+  const time = document.getElementById('time-sel').value;
+  const diff = document.getElementById('diff-sel').value;
+  const servings = document.getElementById('servings-sel').value;
+  const dietary = [...document.querySelectorAll('#dietary-checks input:checked')].map(i=>i.value);
+  const flavors = [...document.querySelectorAll('#flavor-checks input:checked')].map(i=>i.value);
+
+  document.getElementById('ai-placeholder').style.display = 'none';
+  document.getElementById('ai-result').classList.remove('visible');
+  document.getElementById('ai-loading').style.display = 'block';
+
+  const apiKey = state.settings.apiKey;
+  const proxyUrl = state.settings.proxyUrl;
+
+  if (apiKey) {
+    try {
+      const recipe = await callAnthropicAPI(ings, cuisine, time, diff, servings, dietary, flavors, apiKey, proxyUrl);
+      showAIResult(recipe);
+      return;
+    } catch (err) {
+      console.warn('API call failed, using built-in:', err);
+      toast('API unavailable — using built-in generator', 'warning');
+    }
+  }
+
+  // Built-in generator
+  await new Promise(r => setTimeout(r, 1200));
+  const recipe = generateLocalRecipe(ings, cuisine, time, diff, servings, dietary, flavors);
+  showAIResult(recipe);
+}
+
+async function callAnthropicAPI(ings, cuisine, time, diff, servings, dietary, flavors, apiKey, proxyUrl) {
+  const endpoint = proxyUrl || 'https://api.anthropic.com/v1/messages';
+  const prompt = `Create a detailed recipe with the following requirements:
+Cuisine: ${cuisine || 'Any'}
+Available ingredients: ${ings.length ? ings.join(', ') : 'common pantry staples'}
+Cook time: ${time || 'any'}
+Difficulty: ${diff || 'any'}
+Servings: ${servings}
+Dietary restrictions: ${dietary.length ? dietary.join(', ') : 'none'}
+Flavor preferences: ${flavors.length ? flavors.join(', ') : 'balanced'}
+
+Provide the response in this exact format:
+RECIPE NAME: [name]
+DESCRIPTION: [1-2 sentence description]
+INGREDIENTS:
+- [qty] [unit] [ingredient], [preparation]
+(list all ingredients)
+INSTRUCTIONS:
+1. [step]
+(list all steps)
+TASTE PROFILE:
+Sweet: [0-10]
+Salty: [0-10]
+Sour: [0-10]
+Bitter: [0-10]
+Umami: [0-10]
+Spicy: [0-10]
+DRINK PAIRING: [suggested wine/beer/cocktail/non-alcoholic with brief reason]
+TIPS: [1-2 chef tips]`;
+
+  const headers = {
+    'Content-Type': 'application/json',
+    'x-api-key': apiKey,
+    'anthropic-version': '2023-06-01'
+  };
+  if (proxyUrl) { delete headers['x-api-key']; }
+
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1500,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  if (!res.ok) throw new Error(`API ${res.status}`);
+  const data = await res.json();
+  const text = data.content?.[0]?.text || '';
+  return parseAPIRecipe(text);
+}
+
+function parseAPIRecipe(text) {
+  const getName = () => { const m = text.match(/RECIPE NAME:\s*(.+)/i); return m ? m[1].trim() : 'AI-Generated Recipe'; };
+  const getDesc = () => { const m = text.match(/DESCRIPTION:\s*(.+)/i); return m ? m[1].trim() : ''; };
+  const getDrink = () => { const m = text.match(/DRINK PAIRING:\s*(.+)/i); return m ? m[1].trim() : 'A crisp white wine or sparkling water with citrus.'; };
+  const taste = {};
+  ['Sweet','Salty','Sour','Bitter','Umami','Spicy'].forEach(t => {
+    const m = text.match(new RegExp(t + ':\\s*(\\d+)', 'i'));
+    taste[t] = m ? parseInt(m[1]) : Math.floor(Math.random()*5+3);
+  });
+  const bodyStart = text.indexOf('INGREDIENTS:');
+  const bodyEnd = text.indexOf('TASTE PROFILE:');
+  const body = bodyStart >= 0
+    ? (bodyEnd >= 0 ? text.slice(bodyStart, bodyEnd) : text.slice(bodyStart)).replace(/TASTE PROFILE:.*/s,'')
+    : text;
+  return { name: getName(), description: getDesc(), body: body.replace(/RECIPE NAME:.*/,'').replace(/DESCRIPTION:.*/,'').trim(), taste, drinkPairing: getDrink(), fromAPI: true };
+}
+
+function generateLocalRecipe(ings, cuisine, time, diff, servings, dietary, flavors) {
+  const c = cuisine === 'Any' ? 'Any' : cuisine;
+  const bases = RECIPE_DATA.bases[c] || RECIPE_DATA.bases.Any;
+  const base = bases[Math.floor(Math.random() * bases.length)];
+  const aromatics = RECIPE_DATA.aromatics[c] || RECIPE_DATA.aromatics.Any;
+  const herbs = RECIPE_DATA.herbs[c] || RECIPE_DATA.herbs.Any;
+  const sauceList = RECIPE_DATA.sauces[c] || RECIPE_DATA.sauces.Any;
+  const sauce = sauceList[Math.floor(Math.random() * sauceList.length)];
+  const mainIng = ings.length > 0 ? ings.slice(0, 3).join(', ') : 'seasonal vegetables';
+  const isVeg = dietary.includes('Vegetarian') || dietary.includes('Vegan');
+  const protein = isVeg ? 'chickpeas or tofu' : RECIPE_DATA.proteins[Math.floor(Math.random()*RECIPE_DATA.proteins.length)];
+  const isSpicy = flavors.includes('Spicy');
+  const name = `${cuisine !== 'Any' ? cuisine + '-Style ' : ''}${mainIng.split(',')[0].trim().replace(/^\w/,s=>s.toUpperCase())} with ${sauce.replace(/^\w/,s=>s.toUpperCase())}`;
+
+  const bodyText = `INGREDIENTS:
+- ${servings > 2 ? Math.ceil(servings/2) + ' lbs' : '1 lb'} ${ings[0] || protein}
+${ings.slice(1,4).map(i=>`- 1 cup ${i}`).join('\n')}
+- 4 cloves garlic, minced
+- 1 medium onion, diced
+- 2 tbsp olive oil
+- ${isSpicy ? '2 tsp chili flakes' : '1 tsp black pepper'}
+- Salt to taste
+- Fresh ${herbs} for garnish
+- Ingredients for ${base} (prepared separately)
+
+INSTRUCTIONS:
+1. Prepare your ${base} according to package directions or your preferred method. Season well.
+2. Heat olive oil in a large pan over medium-high heat until shimmering. Add the ${aromatics} and sauté for 2-3 minutes until fragrant.
+3. Add ${ings[0] || protein} and cook ${isVeg ? '5-7 minutes' : '4-5 minutes per side'} until ${isVeg ? 'golden and heated through' : 'cooked through and well-browned'}.
+4. Incorporate remaining ingredients: ${ings.slice(1,3).join(', ') || 'seasonal vegetables'}. Toss to combine.
+5. Build the ${sauce} by deglazing the pan. Adjust seasoning with salt${isSpicy ? ', chili flakes,' : ''} and pepper to taste.
+6. Plate the ${base}, top with the ${ings[0] || protein} mixture, and finish with fresh ${herbs}.
+7. Serve immediately${servings > 1 ? `, portioned for ${servings}` : ''}. Garnish as desired.
+
+TIPS:
+• For best results, pat ingredients dry before cooking to promote browning via the Maillard reaction.
+• Taste at every stage — building flavor in layers is the key to depth.`;
+
+  const isRich = flavors.includes('Rich & Savory') || flavors.includes('Umami Bomb');
+  const taste = {
+    Sweet: isRich ? 2 : 4,
+    Salty: 6,
+    Sour: 3,
+    Bitter: 2,
+    Umami: isRich ? 8 : 5,
+    Spicy: isSpicy ? 7 : 2
+  };
+
+  // Drink pairing logic
+  const DRINK_MAP = {
+    Italian: 'Chianti or a crisp Pinot Grigio; Perrier with lemon for non-alcoholic.',
+    Asian: 'Japanese lager, a dry sake, or a ginger-yuzu soda.',
+    Mexican: 'A margarita or cold Mexican lager; tamarind agua fresca.',
+    Mediterranean: 'Dry rosé or Sauvignon Blanc; sparkling water with cucumber.',
+    Indian: 'Mango lassi, a cold lager, or Riesling to handle the spice.',
+    French: 'White Burgundy (Chardonnay) or a light Pinot Noir.',
+    Any: isRich ? 'A full-bodied red wine like Malbec or a dark ale.' : 'A crisp white wine or sparkling water with citrus.'
+  };
+
+  return { name, description: `A ${cuisine !== 'Any' ? cuisine.toLowerCase() : 'flavorful'} dish built around ${mainIng}.`, body: bodyText, taste, drinkPairing: DRINK_MAP[cuisine] || DRINK_MAP.Any, fromAPI: false };
+}
+
+function showAIResult(recipe) {
+  document.getElementById('ai-loading').style.display = 'none';
+  document.getElementById('ai-result').classList.add('visible');
+  document.getElementById('ai-recipe-name').textContent = recipe.name;
+  document.getElementById('ai-recipe-badge').textContent = recipe.fromAPI ? 'AI-Powered' : 'Smart Generator';
+  document.getElementById('ai-recipe-content').textContent = recipe.description + '\n\n' + recipe.body;
+  document.getElementById('ai-drink-pairing').textContent = recipe.drinkPairing;
+  document.getElementById('taste-profile-bars').innerHTML = Object.entries(recipe.taste).map(([k,v])=>`
+    <div class="taste-bar-wrap">
+      <div class="taste-bar-label"><span>${k}</span><span>${v}/10</span></div>
+      <div class="taste-bar-track"><div class="taste-bar-fill" style="width:${v*10}%"></div></div>
+    </div>`).join('');
+  state.pendingAIRecipe = recipe;
+  initAIRatingWidget();
+}
+
+function saveAIRecipe() {
+  if (!state.pendingAIRecipe) return;
+  const r = state.pendingAIRecipe;
+  const saved = {
+    id: uuid(), _type: 'ai',
+    name: r.name,
+    description: r.description || '',
+    body: r.body,
+    taste: r.taste,
+    drinkPairing: r.drinkPairing,
+    category: 'AI Recipe',
+    tags: ['AI Generated'],
+    rating: state.aiRating,
+    created_at: new Date().toISOString()
+  };
+  state.aiRecipes.unshift(saved);
+  saveState();
+  toast('Recipe saved to Library! 📚', 'success');
+}
+
+function viewAIRecipe(id) {
+  const r = state.aiRecipes.find(r=>r.id===id);
+  if (!r) return;
+  document.getElementById('viewer-name').textContent = r.name;
+  document.getElementById('viewer-desc').textContent = r.description || '';
+  document.getElementById('viewer-photo').innerHTML = `🤖<button class="viewer-close-btn" onclick="closeViewer()">×</button>`;
+  document.getElementById('viewer-meta').innerHTML = `<span>🤖 AI Recipe</span><span>${[1,2,3,4,5].map(i=>`<span style="color:${(r.rating||0)>=i?'var(--gold)':'var(--muted)'}">★</span>`).join('')}</span>`;
+  document.getElementById('viewer-ingredients').innerHTML = '';
+  document.getElementById('viewer-steps').innerHTML = '';
+  const notesWrap = document.getElementById('viewer-notes-wrap');
+  notesWrap.style.display = 'block';
+  document.getElementById('viewer-notes').textContent = r.body || '';
+  document.getElementById('viewer-edit-btn').style.display = 'none';
+  document.getElementById('viewer-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+// ═══════════════════════════════════════════════
+//  FLAVOR PROFILES DATA & RENDER
+// ═══════════════════════════════════════════════
+const TASTES = [
+  { name:'Sweet', emoji:'🍯', desc:'Triggered by sugars, some amino acids, and alcohols', color:'#c8a040',
+    foods:['Honey','Maple Syrup','Ripe Fruits','Sweet Peppers','Beets','Carrots','Vanilla'],
+    pairsWith:['Salty','Bitter','Sour','Fat'],
+    why:'Sweet-salty contrast activates different taste receptors simultaneously, creating a more compelling experience.' },
+  { name:'Salty', emoji:'🧂', desc:'Primarily from sodium ions — enhances and amplifies all other flavors', color:'#8ab4d4',
+    foods:['Sea Salt','Soy Sauce','Miso','Anchovies','Capers','Olives','Aged Cheese','Fish Sauce'],
+    pairsWith:['Sweet','Bitter','Umami','Fat'],
+    why:'Salt suppresses bitterness perception while enhancing sweetness and amplifying aromatics — a universal flavor enhancer.' },
+  { name:'Sour', emoji:'🍋', desc:'From organic acids — citric, acetic, lactic, malic', color:'#90c44a',
+    foods:['Lemon','Lime','Vinegar','Yogurt','Fermented Foods','Tomatoes','Tamarind','Kombucha'],
+    pairsWith:['Fat','Sweet','Spicy','Umami'],
+    why:'Acid cuts through richness and fat, brightens flavors, and provides necessary contrast to sweet and savory elements.' },
+  { name:'Bitter', emoji:'☕', desc:'From alkaloids, polyphenols, glucosinolates', color:'#7a9b5a',
+    foods:['Coffee','Dark Chocolate','Arugula','Radicchio','Grapefruit','Dark Greens','IPA Beer','Tonic'],
+    pairsWith:['Sweet','Fat','Salty'],
+    why:'Bitterness signals complexity and is biologically mellowed by fat and sweetness — creating sophisticated flavor depth.' },
+  { name:'Umami', emoji:'🍄', desc:'From glutamates, inosinates, guanylates — the savory depth', color:'#c87840',
+    foods:['Mushrooms','Tomatoes','Aged Cheese','Soy Sauce','Cured Meat','Fish Sauce','Miso','Seaweed'],
+    pairsWith:['Umami','Salty','Fat','Sour'],
+    why:'Umami compounds are synergistic — combining multiple sources (e.g. mushroom + cheese + soy) multiplies the effect exponentially.' },
+  { name:'Fat', emoji:'🥑', desc:'Oleogustus — the rich, coating taste of fatty acids', color:'#e8c040',
+    foods:['Butter','Olive Oil','Avocado','Cream','Nuts','Marbled Beef','Fatty Fish','Egg Yolk'],
+    pairsWith:['Sour','Bitter','Umami','Sweet'],
+    why:'Fat carries fat-soluble flavor compounds and creates a luxurious mouthfeel that mellows harsh flavors and prolongs taste.' },
+  { name:'Spicy', emoji:'🌶️', desc:'Heat from capsaicin, piperine, allicin, isothiocyanates', color:'#d45a30',
+    foods:['Chili Peppers','Ginger','Garlic','Horseradish','Wasabi','Black Pepper','Mustard','Harissa'],
+    pairsWith:['Sweet','Sour','Fat','Dairy'],
+    why:'Capsaicin activates TRPV1 pain receptors; fat and dairy proteins physically bind to capsaicin molecules, reducing perceived heat.' },
+  { name:'Floral', emoji:'🌸', desc:'Aromatic, perfumed notes from terpenes and esters', color:'#d080b0',
+    foods:['Lavender','Rose Water','Elderflower','Vanilla','Cardamom','Saffron','Jasmine','Chamomile'],
+    pairsWith:['Sweet','Citrus','Light Proteins'],
+    why:'Floral aromatics add complexity and elegance without heaviness; they complement delicate flavors through aromatic synergy.' }
+];
+
+const PAIRINGS = [
+  { a:'Chocolate', b:'Sea Salt', why:'Sweet + Salty contrast enhances both flavors, activating more taste receptors simultaneously' },
+  { a:'Lemon', b:'Fish', why:'Acid denatures proteins, cuts omega-3 fats, and brightens the delicate flavor of seafood' },
+  { a:'Tomato', b:'Basil', why:'Share terpene compounds (linalool); complementary flavor chemistry on a molecular level' },
+  { a:'Beef', b:'Mushroom', why:'Both rich in glutamates — umami synergy creates exponential, not just additive, depth' },
+  { a:'Blue Cheese', b:'Honey', why:'Pungent, bitter dairy contrasts with floral sweetness for sophisticated balance' },
+  { a:'Bacon', b:'Maple Syrup', why:'Salty/umami/smoky meets sweet; Maillard products complement caramelized sugars perfectly' },
+  { a:'Strawberry', b:'Balsamic', why:'Sweet berry + aged acidic vinegar creates a sophisticated sweet-sour-complex balance' },
+  { a:'Pork', b:'Apple', why:'Sweet apple\'s malic acid cuts through fatty pork; an ancient and biochemically sound pairing' },
+  { a:'Lamb', b:'Mint', why:'Menthol\'s cooling sensation cuts through lamb\'s gamey fattiness; ancient proven pairing' },
+  { a:'Watermelon', b:'Feta', why:'Sweet + salty + hydrating cool meets saline — textural and flavor contrast in every bite' },
+  { a:'Mango', b:'Chili', why:'Tropical sweetness reduces perceived heat while spice adds excitement to flat sweetness' },
+  { a:'Coffee', b:'Cardamom', why:'Turkish tradition: cardamom\'s floral warmth bridges coffee\'s bitterness with elegance' }
+];
+
+const PAIRING_SCIENCE = [
+  { title:'Contrast Principle', icon:'⚡', text:'Opposing flavors enhance each other by activating different receptor pathways simultaneously. Sweet intensifies with salty; bitter mellows with fat. The brain perceives the contrast as complexity.' },
+  { title:'Complement Principle', icon:'🔗', text:'Foods sharing aromatic volatile compounds create harmonious, reinforcing flavor. Tomato and basil share linalool; pork and apple share esters. Molecular chemistry explains ancient pairings.' },
+  { title:'Bridge Ingredient', icon:'🌉', text:'A middle ingredient connects two that don\'t naturally pair. Honey bridges pungent blue cheese with neutral crackers. Mustard bridges acidic vinaigrette with rich egg. The bridge creates a flavor path.' },
+  { title:'Umami Synergy', icon:'💥', text:'Different umami compounds (glutamates + inosinates + guanylates) are synergistic, not additive. Combining mushroom + parmesan + anchovies creates an umami effect 8× more powerful than any alone.' }
+];
+
+function renderFlavorsTab() {
+  document.getElementById('taste-grid').innerHTML = TASTES.map((t,i)=>`
+    <div class="taste-card" onclick="toggleTasteDetail(${i})" id="taste-card-${i}">
+      <div class="taste-emoji">${t.emoji}</div>
+      <div class="taste-name" style="color:${t.color}">${t.name}</div>
+      <div class="taste-desc">${t.desc}</div>
+      <div class="taste-foods">${t.foods.slice(0,4).map(f=>`<span class="taste-food-chip">${f}</span>`).join('')}</div>
+    </div>`).join('');
+
+  document.getElementById('pairings-grid').innerHTML = PAIRINGS.map(p=>`
+    <div class="pairing-card">
+      <div class="pairing-items">
+        <strong>${p.a}</strong>
+        <span class="pairing-plus">✦</span>
+        <strong>${p.b}</strong>
+      </div>
+      <div class="pairing-reason">${p.why}</div>
+    </div>`).join('');
+
+  document.getElementById('pairing-science').innerHTML = PAIRING_SCIENCE.map(ps=>`
+    <div class="card">
+      <h3 style="margin-bottom:10px;">${ps.icon} ${ps.title}</h3>
+      <p style="font-size:13.5px;color:var(--text2);">${ps.text}</p>
+    </div>`).join('');
+}
+
+function toggleTasteDetail(i) {
+  const t = TASTES[i];
+  const det = document.getElementById('taste-detail');
+  document.querySelectorAll('.taste-card').forEach(c=>c.classList.remove('active'));
+  if (det.dataset.open == i) { det.style.display='none'; det.dataset.open=''; return; }
+  document.getElementById('taste-card-'+i).classList.add('active');
+  det.style.display = 'block';
+  det.dataset.open = i;
+  det.innerHTML = `
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+      <span style="font-size:40px;">${t.emoji}</span>
+      <div><h2 style="color:${t.color};margin:0;">${t.name}</h2><p style="color:var(--text2);font-size:13px;">${t.desc}</p></div>
+    </div>
+    <div class="form-row">
+      <div>
+        <h4 style="margin-bottom:8px;">KEY FOODS</h4>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">${t.foods.map(f=>`<span class="chip">${f}</span>`).join('')}</div>
+      </div>
+      <div>
+        <h4 style="margin-bottom:8px;">PAIRS WITH</h4>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">${t.pairsWith.map(p=>`<span class="badge badge-gold">${p}</span>`).join('')}</div>
+        <p style="font-size:12.5px;color:var(--text2);margin-top:10px;">${t.why}</p>
+      </div>
+    </div>`;
+  det.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+// ═══════════════════════════════════════════════
+//  DRINK PAIRINGS
+// ═══════════════════════════════════════════════
+const DRINK_PAIRINGS = [
+  { food:'Light Fish & Seafood', emoji:'🐟',
+    wine:'Crisp White — Sauvignon Blanc, Pinot Grigio, Albariño',
+    beer:'Wheat Beer, Light Lager, Gose',
+    cocktail:'Gin & Tonic, Aperol Spritz, Light Mojito',
+    spirits:'Dry Gin, Dry Sake, Light Rum',
+    na:'Sparkling Water + Citrus, Green Tea, Elderflower Tonic' },
+  { food:'Rich Fatty Fish (Salmon, Tuna)', emoji:'🍣',
+    wine:'Oaked Chardonnay, Dry Rosé, Light Pinot Noir',
+    beer:'Saison, Belgian Tripel, Pale Ale',
+    cocktail:'Paloma, Aperol Spritz, Light Margarita',
+    spirits:'Mezcal, Dry Sake, Light Bourbon',
+    na:'Kombucha, Sparkling Grapefruit, Jasmine Tea' },
+  { food:'Red Meat (Steak, Lamb)', emoji:'🥩',
+    wine:'Cabernet Sauvignon, Malbec, Syrah — full-bodied reds',
+    beer:'Stout, Porter, Red Ale, West Coast IPA',
+    cocktail:'Old Fashioned, Negroni, Manhattan',
+    spirits:'Aged Bourbon, Single Malt Scotch, Armagnac',
+    na:'Bold Black Tea, Dark Cherry Juice, Sparkling Water' },
+  { food:'Chicken & Poultry', emoji:'🍗',
+    wine:'Chardonnay, Viognier, Gamay — medium whites and light reds',
+    beer:'Amber Ale, Blonde Ale, Wheat Beer',
+    cocktail:'Wine Spritzer, Gin Fizz, Light Whiskey Sour',
+    spirits:'Light Whiskey, Dry Vermouth, Sake',
+    na:'Apple Juice, Iced Herbal Tea, Sparkling Cider' },
+  { food:'Pasta & Pizza', emoji:'🍝',
+    wine:'Chianti, Montepulciano, Dry Italian Whites',
+    beer:'Amber Lager, Märzen, Italian Craft Lager',
+    cocktail:'Aperol Spritz, Bellini, Negroni',
+    spirits:'Amaro, Grappa, Limoncello (digestif)',
+    na:'San Pellegrino, Sparkling Lemon Water, Italian Soda' },
+  { food:'Spicy Food (Indian, Thai, Mexican)', emoji:'🌶️',
+    wine:'Off-Dry Riesling, Gewürztraminer, Dry Rosé',
+    beer:'Lager, Wheat Beer, Mango IPA',
+    cocktail:'Mango Margarita, Coconut Mojito, Paloma',
+    spirits:'Coconut Rum, Tequila Blanco, Light Sake',
+    na:'Mango Lassi, Coconut Water, Tamarind Agua Fresca' },
+  { food:'Cheese Board', emoji:'🧀',
+    wine:'Varies — try Port, aged whites, and tannic reds',
+    beer:'Belgian Dubbel, Lambic, Farmhouse Ale',
+    cocktail:'Classic Martini, Port Cocktail, Digestif Sour',
+    spirits:'Aged Whiskey, Port, Sherry, Calvados',
+    na:'Sparkling Grape Juice, Pear Nectar, Herbal Tea' },
+  { food:'Chocolate Desserts', emoji:'🍫',
+    wine:'Port, Merlot, Banyuls, Pedro Ximénez Sherry',
+    beer:'Imperial Stout, Chocolate Porter, Raspberry Lambic',
+    cocktail:'Espresso Martini, Black Russian, Chocolate Negroni',
+    spirits:'Cognac, Dark Rum, Coffee Liqueur, Aged Bourbon',
+    na:'Espresso, Dark Hot Chocolate, Cherry Juice' },
+  { food:'Vegetarian & Salads', emoji:'🥗',
+    wine:'Grüner Veltliner, Dry Rosé, Crisp White',
+    beer:'Saison, Kölsch, Blonde Ale',
+    cocktail:'Garden Spritz, Cucumber Cooler, Gin Fizz',
+    spirits:'Herbaceous Gin, Light Vermouth, Dry Sake',
+    na:'Shrub Sodas, Sparkling Lemonade, Cold Brew Green Tea' },
+  { food:'Brunch & Eggs', emoji:'🥞',
+    wine:'Prosecco, Cava, Dry Champagne',
+    beer:'Wheat Beer, Fruit Lambic, Session Lager',
+    cocktail:'Bloody Mary, Mimosa, Bellini, French 75',
+    spirits:'Vodka, Calvados, Aquavit',
+    na:'Fresh OJ, Cold Brew Coffee, Grapefruit Sparkling Water' },
+  { food:'BBQ & Smoked Meats', emoji:'🔥',
+    wine:'Zinfandel, Syrah, Petite Sirah — bold and fruity',
+    beer:'Smoked Porter, Brown Ale, Sweet Stout',
+    cocktail:'Whiskey Sour, Dark Mule, Smoked Old Fashioned',
+    spirits:'Bourbon, Mezcal, Tennessee Whiskey',
+    na:'Sweet Tea, Lemonade, Sparkling Cherry Soda' },
+  { food:'Sushi & Japanese', emoji:'🍱',
+    wine:'Dry sake, Junmai Daiginjo, Crisp White',
+    beer:'Japanese Lager, Kirin, Wheat Beer',
+    cocktail:'Yuzu Spritz, Sake Martini, Light Gimlet',
+    spirits:'Shochu, Dry Sake, Japanese Whisky',
+    na:'Green Tea, Barley Tea, Sparkling Yuzu Water' }
+];
+
+function renderDrinksTab() {
+  document.getElementById('drink-categories').innerHTML = DRINK_PAIRINGS.map((dp,i)=>`
+    <div class="drink-category">
+      <div class="drink-category-header" onclick="toggleDrink(${i})">
+        <span style="font-size:1.05rem;font-weight:600;">${dp.emoji} ${dp.food}</span>
+        <span style="color:var(--text2);font-size:18px;" id="drink-arrow-${i}">›</span>
+      </div>
+      <div class="drink-category-body" id="drink-body-${i}">
+        <div class="drink-row"><div class="drink-type-icon">🍷</div><div class="drink-info"><strong>Wine</strong><span>${dp.wine}</span></div></div>
+        <div class="drink-row"><div class="drink-type-icon">🍺</div><div class="drink-info"><strong>Beer</strong><span>${dp.beer}</span></div></div>
+        <div class="drink-row"><div class="drink-type-icon">🍹</div><div class="drink-info"><strong>Cocktail</strong><span>${dp.cocktail}</span></div></div>
+        <div class="drink-row"><div class="drink-type-icon">🥃</div><div class="drink-info"><strong>Spirits</strong><span>${dp.spirits}</span></div></div>
+        <div class="drink-row"><div class="drink-type-icon">🫧</div><div class="drink-info"><strong>Non-Alcoholic</strong><span>${dp.na}</span></div></div>
+      </div>
+    </div>`).join('');
+}
+
+function toggleDrink(i) {
+  const body = document.getElementById('drink-body-'+i);
+  const arrow = document.getElementById('drink-arrow-'+i);
+  const isOpen = body.classList.toggle('open');
+  arrow.style.transform = isOpen ? 'rotate(90deg)' : '';
+  arrow.style.transition = 'transform .2s';
+}
+
+function filterDrinks() {
+  const q = document.getElementById('drink-search').value.toLowerCase();
+  document.querySelectorAll('.drink-category').forEach((el,i) => {
+    el.style.display = !q || DRINK_PAIRINGS[i].food.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  ORIGINS
+// ═══════════════════════════════════════════════
+const ORIGINS = [
+  { region:'Central America', emoji:'🌽', crops:['Maize (Corn)','Avocado','Cacao (Chocolate)','Chili Peppers','Vanilla','Sweet Potato','Squash'], significance:'Foundation of the modern global snack, oil, and confectionery economy' },
+  { region:'South America', emoji:'🥔', crops:['Potato','Tomato','Quinoa','Pineapple','Cassava','Peppers','Blueberry'], significance:'Essential staples across Europe and Asia; tomato is now ubiquitous in Italian and Indian cuisine' },
+  { region:'Fertile Crescent (Near East)', emoji:'🌾', crops:['Wheat','Barley','Chickpeas','Lentils','Figs','Pomegranate','Pistachio','Onion'], significance:'Birthplace of settled agriculture ~10,000 BCE; foundation of Western and Middle Eastern staple diets' },
+  { region:'East Asia', emoji:'🍚', crops:['Rice','Soybean','Citrus Fruits','Peach','Apricot','Millet','Tea'], significance:'Dominant source of global protein (soy), carbohydrates (rice), and vitamins (citrus)' },
+  { region:'West Africa', emoji:'🌴', crops:['African Rice','Yam','Pearl Millet','Oil Palm','Cowpea','Sorghum'], significance:'Center of tropical grain and oil diversity; foundation of African, Caribbean, and Southern cuisines' },
+  { region:'Southeast Asia & Oceania', emoji:'🍌', crops:['Banana','Sugarcane','Coconut','Clove','Nutmeg','Breadfruit','Taro'], significance:'Source of the world\'s most traded fruit and the origin of the global spice trade' },
+  { region:'South Asia', emoji:'🫚', crops:['Mango','Eggplant','Cardamom','Turmeric','Black Pepper','Lychee','Sesame'], significance:'Origin of the spice trade that drove European exploration; still the world\'s top spice-producing region' },
+  { region:'Mediterranean Basin', emoji:'🫒', crops:['Olive','Grape','Fig','Artichoke','Asparagus','Fennel','Lavender'], significance:'Source of olive oil and wine culture that shaped Western civilization and the Mediterranean diet' }
+];
+
+const CHOKEPOINTS = [
+  { name:'Suez Canal', icon:'🚢', desc:'Connects Europe to Asia and East Africa; disruption affects grain and oil transport for dozens of nations' },
+  { name:'Panama Canal', icon:'⚓', desc:'Connects Atlantic and Pacific; critical for agricultural exports from the Americas to Asian markets' },
+  { name:'Strait of Malacca', icon:'🌊', desc:'Connects Indian Ocean to Pacific; handles 30% of global trade, including most of Asia\'s oil and food imports' }
+];
+
+function renderOriginsTab() {
+  document.getElementById('origin-grid').innerHTML = ORIGINS.map(o=>`
+    <div class="origin-card">
+      <div class="origin-region">${o.emoji} ${o.region}</div>
+      <p style="font-size:12.5px;color:var(--text2);">${o.significance}</p>
+      <div class="origin-crops">${o.crops.map(c=>`<span class="origin-crop">${c}</span>`).join('')}</div>
+    </div>`).join('');
+  document.getElementById('chokepoints-grid').innerHTML = CHOKEPOINTS.map(cp=>`
+    <div class="card">
+      <div style="font-size:28px;margin-bottom:10px;">${cp.icon}</div>
+      <h3 style="margin-bottom:8px;">${cp.name}</h3>
+      <p style="font-size:13px;color:var(--text2);">${cp.desc}</p>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════
+//  LIBRARY
+// ═══════════════════════════════════════════════
+let libFilter = 'all';
+
+function setLibFilter(btn, filter) {
+  libFilter = filter;
+  document.querySelectorAll('.filter-btn[data-lib]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderLibrary();
+}
+
+function renderLibrary() {
+  const q = (document.getElementById('lib-search').value || '').toLowerCase();
+  const sort = document.getElementById('lib-sort').value;
+  let allRecipes = [];
+  if (libFilter !== 'ai') allRecipes.push(...state.recipes);
+  if (libFilter !== 'mine') allRecipes.push(...state.aiRecipes);
+  if (q) allRecipes = allRecipes.filter(r => r.name.toLowerCase().includes(q) || (r.tags||[]).some(t=>t.toLowerCase().includes(q)));
+  if (sort === 'rating') allRecipes.sort((a,b)=>(b.rating||0)-(a.rating||0));
+  else if (sort === 'name') allRecipes.sort((a,b)=>a.name.localeCompare(b.name));
+  else allRecipes.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  const grid = document.getElementById('library-grid');
+  if (!allRecipes.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="es-icon">📚</div><p>No recipes here yet.</p></div>`;
+    return;
+  }
+  grid.innerHTML = allRecipes.map(r=>recipeCardHTML(r, r._type==='ai')).join('');
+}
+
+// ═══════════════════════════════════════════════
+//  SETTINGS
+// ═══════════════════════════════════════════════
+function renderSettings() {
+  document.getElementById('api-key-input').value = state.settings.apiKey || '';
+  document.getElementById('proxy-url-input').value = state.settings.proxyUrl || '';
+  const badge = document.getElementById('api-status-badge');
+  if (state.settings.apiKey) { badge.textContent = '⬤ Configured'; badge.className = 'api-status ok'; }
+  else { badge.textContent = '⬤ Not Configured'; badge.className = 'api-status no'; }
+}
+
+function saveApiSettings() {
+  state.settings.apiKey = document.getElementById('api-key-input').value.trim();
+  state.settings.proxyUrl = document.getElementById('proxy-url-input').value.trim();
+  saveState();
+  renderSettings();
+  document.getElementById('ai-status').textContent = state.settings.apiKey ? '✅ API key configured' : '🔧 No API key — using smart generator';
+  toast('Settings saved!', 'success');
+}
+
+function exportData() {
+  const data = { recipes: state.recipes, aiRecipes: state.aiRecipes, exportedAt: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `dkl-backup-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  toast('Data exported!', 'success');
+}
+
+function importData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.recipes) state.recipes.push(...data.recipes);
+      if (data.aiRecipes) state.aiRecipes.push(...data.aiRecipes);
+      saveState();
+      toast(`Imported ${(data.recipes||[]).length + (data.aiRecipes||[]).length} recipes!`, 'success');
+    } catch { toast('Invalid file format', 'error'); }
+  };
+  reader.readAsText(file);
+}
+
+function clearAllData() {
+  if (!confirm('Clear ALL saved recipes and data? This cannot be undone!')) return;
+  state.recipes = []; state.aiRecipes = [];
+  saveState();
+  renderDashboard();
+  toast('All data cleared', 'info');
+}
+
+// ═══════════════════════════════════════════════
+//  SERVICE WORKER REGISTRATION
+// ═══════════════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
+function init() {
+  loadState();
+  buildNav();
+  renderFlavorsTab();
+  renderDrinksTab();
+  renderOriginsTab();
+  initAILab();
+  initRecipeBook();
+  renderDashboard();
+
+  // Update AI status in lab
+  document.getElementById('ai-status').textContent = state.settings.apiKey
+    ? '✅ API key configured — AI-powered generation active'
+    : '🔧 No API key — using built-in smart generator';
+
+  // Handle hash-based navigation (for manifest shortcuts)
+  const hash = window.location.hash.replace('#','');
+  if (hash && document.getElementById('tab-'+hash)) navigate(hash);
+}
+
+
+// ═══════════════════════════════════════════════
+//  RECIPE BOOK (Pre-Made Recipes)
+// ═══════════════════════════════════════════════
+let rbPage = 1;
+const RB_PER_PAGE = 24;
+let rbCurrentRecipe = null;
+
+function initRecipeBook() {
+  if (typeof PREMADE_RECIPES === 'undefined') return;
+  const cuisines = [...new Set(PREMADE_RECIPES.map(r => r.c))].sort();
+  const types    = [...new Set(PREMADE_RECIPES.map(r => r.t))].sort();
+  const cSel = document.getElementById('rb-cuisine');
+  const tSel = document.getElementById('rb-type');
+  cuisines.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; cSel.appendChild(o); });
+  types.forEach(t => { const o = document.createElement('option'); o.value = t; o.textContent = t; tSel.appendChild(o); });
+  renderRecipeBook();
+}
+
+function filterRecipeBook() {
+  if (typeof PREMADE_RECIPES === 'undefined') return [];
+  const q    = (document.getElementById('rb-search')?.value || '').toLowerCase();
+  const cuis = document.getElementById('rb-cuisine')?.value || '';
+  const type = document.getElementById('rb-type')?.value || '';
+  const diff = document.getElementById('rb-diff')?.value || '';
+  const sort = document.getElementById('rb-sort')?.value || 'name';
+  const diffOrder = { Easy:0, Medium:1, Hard:2, Expert:3 };
+
+  let list = PREMADE_RECIPES.filter(r => {
+    if (cuis && r.c !== cuis) return false;
+    if (type && r.t !== type) return false;
+    if (diff && r.d !== diff) return false;
+    if (q) {
+      const haystack = (r.n + ' ' + r.c + ' ' + r.t + ' ' + (r.i||[]).join(' ') + ' ' + (r.h||'')).toLowerCase();
+      if (!haystack.includes(q)) return false;
+    }
+    return true;
+  });
+
+  if (sort === 'time') list.sort((a,b) => a.m - b.m);
+  else if (sort === 'diff') list.sort((a,b) => (diffOrder[a.d]||0) - (diffOrder[b.d]||0));
+  else list.sort((a,b) => a.n.localeCompare(b.n));
+  return list;
+}
+
+function renderRecipeBook() {
+  rbPage = 1;
+  const list = filterRecipeBook();
+  updateRBGrid(list);
+}
+
+function updateRBGrid(list) {
+  const count = document.getElementById('rb-count');
+  const grid  = document.getElementById('rb-grid');
+  const pag   = document.getElementById('rb-pagination');
+  if (!grid) return;
+
+  const totalPages = Math.ceil(list.length / RB_PER_PAGE);
+  const pageItems  = list.slice((rbPage-1)*RB_PER_PAGE, rbPage*RB_PER_PAGE);
+
+  count.textContent = list.length + ' recipes found';
+
+  const diffColors = { Easy:'var(--green)', Medium:'var(--gold)', Hard:'var(--red)', Expert:'#9a3fe8' };
+  const typeEmoji  = { Healthy:'🥗', Dessert:'🍰', 'Fast Food':'🍔', Soup:'🍲', Breakfast:'🍳', Dinner:'🍽️', Seafood:'🦞', Holiday:'🎉', Comfort:'🫶', BBQ:'🔥', Appetizer:'🥢', Rice:'🍚', Pasta:'🍝', Noodles:'🍜', Bread:'🍞', Drink:'🥤', Side:'🥦', Sauce:'🫙', Basics:'📋', 'Street Food':'🌮' };
+
+  if (!pageItems.length) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="es-icon">🔍</div><p>No recipes match your filters.</p></div>';
+    pag.innerHTML = '';
+    return;
+  }
+
+  grid.innerHTML = pageItems.map(r => {
+    const emoji = typeEmoji[r.t] || '🍽️';
+    const diff  = r.d || 'Easy';
+    const mins  = r.m < 60 ? r.m + ' min' : Math.floor(r.m/60) + 'h' + (r.m%60 ? ' '+r.m%60+'m' : '');
+    const ings  = (r.i||[]).slice(0,3).map(i => '<span class="rc-tag">' + i.substring(0,22) + (i.length>22?'…':'') + '</span>').join('');
+    return '<div class="recipe-card" onclick="openRBDetail(' + r.id + ')">' +
+      '<div class="rc-photo" style="font-size:42px;">' + emoji + '</div>' +
+      '<div class="rc-body">' +
+        '<div class="rc-name">' + r.n + '</div>' +
+        '<div style="font-size:11.5px;color:var(--text2);margin-bottom:6px;">' + r.c + ' · ' + r.t + '</div>' +
+        '<div class="rc-meta">' +
+          '<span style="font-size:11px;color:var(--muted)">⏱ ' + mins + '</span>' +
+          '<span style="font-size:11px;padding:2px 7px;border-radius:10px;background:' + (diffColors[diff]||'var(--gold)') + '22;color:' + (diffColors[diff]||'var(--gold)') + '">' + diff + '</span>' +
+          ings +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  // Pagination
+  if (totalPages <= 1) { pag.innerHTML = ''; return; }
+  const maxBtn = 7;
+  let pages = [];
+  if (totalPages <= maxBtn) { for(let i=1;i<=totalPages;i++) pages.push(i); }
+  else {
+    pages = [1];
+    if (rbPage > 3) pages.push('...');
+    for (let i=Math.max(2,rbPage-1); i<=Math.min(totalPages-1,rbPage+1); i++) pages.push(i);
+    if (rbPage < totalPages-2) pages.push('...');
+    pages.push(totalPages);
+  }
+  pag.innerHTML = pages.map(p =>
+    p === '...'
+      ? '<span style="color:var(--muted);padding:6px;">…</span>'
+      : '<button class="btn ' + (p===rbPage?'btn-primary':'btn-secondary') + ' btn-sm" onclick="goRBPage(' + p + ',event)">' + p + '</button>'
+  ).join('');
+}
+
+function goRBPage(p, e) {
+  if (e) e.stopPropagation();
+  rbPage = p;
+  const list = filterRecipeBook();
+  updateRBGrid(list);
+  document.getElementById('tab-recipes')?.scrollTo(0,0);
+  document.getElementById('rb-grid')?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function openRBDetail(id) {
+  const r = PREMADE_RECIPES.find(x => x.id === id);
+  if (!r) return;
+  rbCurrentRecipe = r;
+  const typeEmoji = { Healthy:'🥗', Dessert:'🍰', 'Fast Food':'🍔', Soup:'🍲', Breakfast:'🍳', Dinner:'🍽️', Seafood:'🦞', Holiday:'🎉', Comfort:'🫶', BBQ:'🔥', 'Street Food':'🌮' };
+  document.getElementById('rb-detail-photo').innerHTML =
+    '<span style="font-size:50px;">' + (typeEmoji[r.t]||'🍽️') + '</span>' +
+    '<button class="viewer-close-btn" onclick="closeRBDetail()">×</button>';
+  document.getElementById('rb-detail-name').textContent = r.n;
+  const mins = r.m < 60 ? r.m+' min' : Math.floor(r.m/60)+'h'+(r.m%60?' '+r.m%60+'m':'');
+  document.getElementById('rb-detail-meta').innerHTML =
+    '<span>🌍 '+r.c+'</span><span>📂 '+r.t+'</span><span>⏱ '+mins+'</span><span>📊 '+r.d+'</span>';
+  const ingList = document.getElementById('rb-detail-ings');
+  ingList.innerHTML = (r.i||[]).map(i => '<li>'+i+'</li>').join('');
+  document.getElementById('rb-detail-how').textContent = r.h || '';
+  document.getElementById('rb-detail-save').onclick = () => saveRBRecipe(r);
+  document.getElementById('rb-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeRBDetail() {
+  document.getElementById('rb-overlay')?.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function saveRBRecipe(r) {
+  const saved = {
+    id: uuid(), _type: 'ai',
+    name: r.n,
+    description: r.c + ' · ' + r.t,
+    body: 'Ingredients:\n' + (r.i||[]).map(i=>'• '+i).join('\n') + '\n\nMethod:\n' + (r.h||''),
+    category: r.t,
+    tags: [r.c, r.t, r.d],
+    rating: 0,
+    created_at: new Date().toISOString()
+  };
+  state.aiRecipes.unshift(saved);
+  saveState();
+  toast('Saved to Library! 📚', 'success');
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
